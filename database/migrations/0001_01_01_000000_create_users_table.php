@@ -11,35 +11,49 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('users', function (Blueprint $table) {
-            $table->uuid('usu_id')->unique()->primary();
-            $table->string('usu_correo_electronico', 255)->unique();
-            $table->string('usu_nombre_de_usuario', 40)->unique();
-            $table->string('usu_numero_de_control', 10)->nullable();
-            $table->string('usu_descripcion', 300)->nullable();
-            $table->string('usu_path_foto_de_perfil', 255)->nullable();
-            $table->string('usu_path_img_portada', 255)->nullable();
-            $table->char('usu_pass', 60)->nullable();
-            $table->unsignedTinyInteger('usu_tipo');
-            $table->string('usu_primer_nombre', 50);
-            $table->string('usu_primer_apellido', 40)->nullable();
-            $table->string('usu_segundo_apellido', 40)->nullable();
+        Schema::create('Users', function (Blueprint $table) {
+            $table->uuid('user_id')->unique()->primary();
+            $table->string('user_email', 255)->unique();
+            $table->string('user_username', 40)->unique();
+            $table->string('user_control_number', 10)->nullable();
+            $table->string('user_description', 300)->nullable();
+            $table->string('user_path_profile_picture', 255)->nullable();
+            $table->string('user_path_banner', 255)->nullable();
+            $table->char('user_pass', 60)->nullable();
+            $table->unsignedTinyInteger('user_type');
+            $table->string('user_name', 50);
+            $table->string('user_surname', 40)->nullable();
+            $table->string('user_second_surname', 40)->nullable();
+            $table->timestampsTz();
         });
 
-        Schema::create('Usuarios_temp', function (Blueprint $table) {
-            $table->string('usu_correo_electronico', 255);
+        Schema::create('Users_temp', function (Blueprint $table) {
+            $table->string('user_email', 255);
             $table->string('token', 32)->nullable();
-            $table->unsignedTinyInteger('tipo_usu');
-            $table->dateTime('fecha_creacion');
-            $table->unsignedTinyInteger('tipo_request');
+            $table->unsignedTinyInteger('user_type');
+            $table->unsignedTinyInteger('request_type');
+            $table->timestampsTz();
         });
 
-        # Sujeta a debate
-        #Schema::create('password_reset_tokens', function (Blueprint $table) {
-        #    $table->string('email')->primary();
-        #    $table->string('token');
-        #    $table->timestamp('created_at')->nullable();
-        #});
+        Schema::create('Collaborators', function (Blueprint $table) {
+            $table->string('col_email', 255)->primary();
+            $table->string('col_description', 300)->nullable();
+            $table->string('col_path_profile_picture', 255)->nullable();
+            $table->string('col_url_linkedin', 255)->nullable();
+            $table->string('col_url_website', 255)->nullable();
+            $table->string('col_names', 50);
+            $table->string('col_surname', 40)->nullable();
+            $table->string('col_second_surname', 40)->nullable();
+            $table->timestampsTz();
+        });
+
+        Schema::create('Medals', function (Blueprint $table) {
+            $table->unsignedInteger('med_serial')->primary();
+            $table->string('med_name', 80);
+            $table->string('med_description', 300)->nullable();
+            $table->string('med_path_image', 255)->nullable();
+            $table->timestampsTz();
+        });
 
         # No es necesaria, pero guardare por ahora como referencia
         #Schema::create('sessions', function (Blueprint $table) {
