@@ -48,7 +48,7 @@ return new class extends Migration
         });
 
         Schema::create('Medals', function (Blueprint $table) {
-            $table->unsignedInteger('med_serial')->primary();
+            $table->unsignedInteger('med_serial', true)->primary();
             $table->string('med_name', 80);
             $table->string('med_description', 300)->nullable();
             $table->string('med_path_image', 255)->nullable();
@@ -71,8 +71,10 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('users');
-        Schema::dropIfExists('Usuarios_temp');
+        Schema::dropIfExists('Users');
+        Schema::dropIfExists('Users_temp');
+        Schema::dropIfExists('Collaborators');
+        Schema::dropIfExists('Medals');
         #Schema::dropIfExists('password_reset_tokens');
         #Schema::dropIfExists('sessions');
     }
