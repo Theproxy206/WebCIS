@@ -11,7 +11,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('Users', function (Blueprint $table) {
+        Schema::create('users', function (Blueprint $table) {
             $table->uuid('user_id')->unique()->primary();
             $table->string('user_email', 255)->unique();
             $table->string('user_username', 40)->unique();
@@ -27,7 +27,7 @@ return new class extends Migration
             $table->timestampsTz();
         });
 
-        Schema::create('Users_temp', function (Blueprint $table) {
+        Schema::create('users_temp', function (Blueprint $table) {
             $table->string('user_email', 255);
             $table->string('token', 32)->nullable();
             $table->unsignedTinyInteger('user_type');
@@ -35,7 +35,7 @@ return new class extends Migration
             $table->timestampsTz();
         });
 
-        Schema::create('Collaborators', function (Blueprint $table) {
+        Schema::create('collaborators', function (Blueprint $table) {
             $table->string('col_email', 255)->primary();
             $table->string('col_description', 300)->nullable();
             $table->string('col_path_profile_picture', 255)->nullable();
@@ -47,7 +47,7 @@ return new class extends Migration
             $table->timestampsTz();
         });
 
-        Schema::create('Medals', function (Blueprint $table) {
+        Schema::create('medals', function (Blueprint $table) {
             $table->unsignedInteger('med_serial', true)->primary();
             $table->string('med_name', 80);
             $table->string('med_description', 300)->nullable();
@@ -71,10 +71,10 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('Users');
-        Schema::dropIfExists('Users_temp');
-        Schema::dropIfExists('Collaborators');
-        Schema::dropIfExists('Medals');
+        Schema::dropIfExists('users');
+        Schema::dropIfExists('users_temp');
+        Schema::dropIfExists('collaborators');
+        Schema::dropIfExists('medals');
         #Schema::dropIfExists('password_reset_tokens');
         #Schema::dropIfExists('sessions');
     }

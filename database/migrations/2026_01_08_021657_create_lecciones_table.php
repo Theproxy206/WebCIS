@@ -12,14 +12,14 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('courses', function (Blueprint $table) {
-            $table->string('cor_token')->primary();
-            $table->string('cor_title', 200);
-            $table->string('cor_short_title', 80);
-            $table->string('cor_description', 300)->nullable();
+            $table->string('cou_token')->primary();
+            $table->string('cou_title', 200);
+            $table->string('cou_short_title', 80);
+            $table->string('cou_description', 300)->nullable();
             $table->timestampsTz();
-            $table->string('cor_code', 14)->unique();
-            $table->string('cor_content', 255);
-            $table->string('cor_path_icon', 255)->nullable();
+            $table->string('cou_code', 14)->unique();
+            $table->string('cou_content', 255);
+            $table->string('cou_path_icon', 255)->nullable();
         });
 
         Schema::create('lessons', function (Blueprint $table) {
@@ -40,6 +40,6 @@ return new class extends Migration
     public function down(): void
     {
         Schema::dropIfExists('courses');
-        Schema::dropIfExists('lecciones');
+        Schema::dropIfExists('lessons');
     }
 };
