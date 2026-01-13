@@ -12,7 +12,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('courses', function (Blueprint $table) {
-            $table->string('cou_token')->primary();
+            $table->string('cou_token', 12)->primary();
             $table->string('cou_title', 200);
             $table->string('cou_short_title', 80);
             $table->string('cou_description', 300)->nullable();
@@ -27,7 +27,7 @@ return new class extends Migration
             $table->string('les_title', 200);
             $table->string('les_short_title', 60);
             $table->timestampsTz();
-            $table->unsignedInteger('fk_lessons_courses');
+            $table->string('fk_lessons_courses', 12);
             $table->unsignedInteger('fk_lessons_lessons');
             $table->foreign('fk_lessons_courses')->references('cou_token')->on('courses');
             $table->foreign('fk_lessons_lessons')->references('les_serial')->on('lessons');
