@@ -11,31 +11,26 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('lecciones', function (Blueprint $table) {
-            $table->id('lec_serial');
-            $table->longText('lec_contenido');
-            $table->string('lec_titulo', 200);
-            $table->string('lec_titulo_corto', 60);
-            $table->dateTime('lec_ultima_actualizacion');
-            $table->foreignId('fk_lecciones_lecciones')
-                ->nullable()
-                ->index()
-                ->constrained('lecciones', 'lec_serial')
-                ->nullOnDelete()
-                ->cascadeOnUpdate();
-            $table->foreignId('fk_lecciones_cursos')
-                ->nullable()
-                ->index()
-                ->constrained('cursos', 'cur_serial')
-                ->nullOnDelete()
-                ->cascadeOnUpdate();
-            $table->foreignUuid('fk_lecciones_usuarios')
-                ->nullable()
-                ->index()
-                ->constrained('usuarios', 'usu_id')
-                ->nullOnDelete()
-                ->cascadeOnUpdate();
-            $table->timestamps();
+        Schema::create('courses', function (Blueprint $table) {
+            $table->string('cor_token')->primary();
+            $table->string('cor_title', 200);
+            $table->string('cor_short_title', 80);
+            $table->string('cor_description', 300)->nullable();
+            $table->timestampsTz();
+            $table->string('cor_code', 14)->unique();
+            $table->string('cor_content', 255);
+            $table->string('cor_path_icon', 255)->nullable();
+        });
+
+        Schema::create('lessons', function (Blueprint $table) {
+            $table->unsignedInteger('les_serial', true)->primary();
+            $table->string('les_title', 200);
+            $table->string('les_short_title', 60);
+            $table->timestampsTz();
+            $table->unsignedInteger('fk_lessons_courses');
+            $table->unsignedInteger('fk_lessons_lessons');
+            $table->foreign('fk_lessons_courses')->references('cou_token')->on('courses');
+            $table->foreign('fk_lessons_lessons')->references('les_serial')->on('lessons');
         });
     }
 
@@ -44,6 +39,7 @@ return new class extends Migration
      */
     public function down(): void
     {
+        Schema::dropIfExists('courses');
         Schema::dropIfExists('lecciones');
     }
 };
