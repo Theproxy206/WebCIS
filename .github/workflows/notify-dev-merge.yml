@@ -1,0 +1,18 @@
+name: Notify Discord on merge to dev
+
+on:
+  push:
+    branches:
+      - dev
+
+jobs:
+  notify:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Send Discord notification
+        run: |
+          curl -X POST ${{ secrets.DISCORD_WEBHOOK_URL }} \
+          -H "Content-Type: application/json" \
+          -d '{
+            "content": "🚨 **Nuevo cambio en `dev`**\nSe hizo un merge a `dev`. Por favor actualicen sus ramas para evitar conflictos 🧠⚔️"
+          }'
