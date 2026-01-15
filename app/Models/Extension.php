@@ -11,7 +11,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  * @extends Model
  * @author Sergio E.
  */
-class Extensions extends Model
+class Extension extends Model
 {
     protected $table = 'extensions';
     protected $primaryKey = 'ext_serial';
@@ -22,10 +22,10 @@ class Extensions extends Model
      * Function that represents the one-to-many relationship with files
      *
      * @return HasMany
-     * @class Extensions
+     * @class Extension
      */
     public function files() : HasMany
     {
-        return $this->hasMany(Files::Class, 'fk_extension_type', 'ext_serial');
+        return $this->hasMany(File::Class, 'fk_extension_type', 'ext_serial');
     }
 }

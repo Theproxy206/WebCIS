@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
-class Materials extends Model
+class Material extends Model
 {
     protected $table = 'materials';
     protected $primaryKey = 'mat_serial';
@@ -23,18 +23,18 @@ class Materials extends Model
      * Function that represents the one-to-many relationship with files
      *
      * @return HasMany
-     * @class Materials
+     * @class Material
      */
     public function files() : HasMany
     {
-        return $this->hasMany(Files::Class, 'fk_material_file', 'mat_serial');
+        return $this->hasMany(File::Class, 'fk_material_file', 'mat_serial');
     }
 
     /**
      * Function that represents the ownership of users over materials
      *
      * @return BelongsTo
-     * @class Materials
+     * @class Material
      */
     public function users() : BelongsTo
     {

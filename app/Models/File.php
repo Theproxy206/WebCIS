@@ -9,7 +9,7 @@ use Illuminate\Database\Eloquent\Model;
  *
  * @extends Model
  */
-class Files extends Model
+class File extends Model
 {
     protected $table = 'files';
     protected $primaryKey = 'fil_serial';
