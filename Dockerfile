@@ -47,6 +47,12 @@ COPY . ${APP_DIR}
 RUN chown -R apache:apache ${APP_DIR} && \
     chmod -R 775 ${APP_DIR}/storage ${APP_DIR}/bootstrap/cache
 
+RUN composer install \
+    --no-dev \
+    --no-interaction \
+    --prefer-dist \
+    --optimize-autoloader
+
 WORKDIR ${APP_DIR}
 
 EXPOSE 80
