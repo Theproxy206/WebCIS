@@ -6,7 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class Collaborator extends Model
 {
-    protected $table = 'Collaborators';
+    protected $table = 'collaborators';
     protected $primaryKey = 'col_email';
     public $incrementing = false;
     protected $keyType = 'string';
