@@ -5,6 +5,7 @@ pipeline {
     IMAGE_NAME = "wcis-backend"
     CI_DB_CONTAINER = "ci-mariadb"
     PROD_CONTAINER = "wcis-backend-prod"
+    CI_NETWORK = "ci-net"
   }
 
   stages {
@@ -20,6 +21,18 @@ pipeline {
     /* =========================
        PR → DEV : CI
     ========================== */
+    stage('CI - Prepare Network') {
+      when {
+        changeRequest target: 'dev'
+      }
+      steps {
+        sh '''
+          docker network rm ${CI_NETWORK} || true
+          docker network create ${CI_NETWORK}
+        '''
+      }
+    }
+
     stage('CI - Build Image') {
       when {
         changeRequest target: 'dev'
@@ -35,24 +48,38 @@ pipeline {
       }
       steps {
         withCredentials([
-            string(credentialsId: 'db_password', variable: 'DB_PASS'),
-            string(credentialsId: 'db_user', variable: 'DB_USER'),
-            string(credentialsId: 'db_name', variable: 'DB_NAME')
+          string(credentialsId: 'db_password', variable: 'DB_PASS'),
+          string(credentialsId: 'db_user', variable: 'DB_USER'),
+          string(credentialsId: 'db_name', variable: 'DB_NAME')
         ]) {
-            sh '''
-              docker rm -f ${CI_DB_CONTAINER} || true
+          sh '''
+            docker rm -f ${CI_DB_CONTAINER} || true
 
-              docker run -d \
-                --name ${CI_DB_CONTAINER} \
-                -e MARIADB_DATABASE=${DB_NAME} \
-                -e MARIADB_USER=${DB_USER} \
-                -e MARIADB_PASSWORD=${DB_PASS} \
-                -e MARIADB_ROOT_PASSWORD=root \
-                mariadb:11
-            '''
-
-            sh 'sleep 10'
+            docker run -d \
+              --name ${CI_DB_CONTAINER} \
+              --network ${CI_NETWORK} \
+              -e MARIADB_DATABASE=${DB_NAME} \
+              -e MARIADB_USER=${DB_USER} \
+              -e MARIADB_PASSWORD=${DB_PASS} \
+              -e MARIADB_ROOT_PASSWORD=root \
+              mariadb:11
+          '''
         }
+      }
+    }
+
+    stage('CI - Wait for MariaDB') {
+      when {
+        changeRequest target: 'dev'
+      }
+      steps {
+        sh '''
+          echo "Esperando a MariaDB..."
+          until docker exec ${CI_DB_CONTAINER} mysqladmin ping -h "localhost" --silent; do
+            sleep 2
+          done
+          echo "MariaDB lista"
+        '''
       }
     }
 
@@ -61,27 +88,31 @@ pipeline {
         changeRequest target: 'dev'
       }
       steps {
-      withCredentials([
-        string(credentialsId: 'db_password', variable: 'DB_PASS'),
-        string(credentialsId: 'db_user', variable: 'DB_USER'),
-        string(credentialsId: 'db_name', variable: 'DB_NAME')
-      ]) {
-            sh '''
-              docker run --rm \
-                --link ${CI_DB_CONTAINER}:db \
-                -e DB_CONNECTION=mariadb \
-                -e DB_HOST=db \
-                -e DB_DATABASE=${DB_NAME} \
-                -e DB_USERNAME=${DB_USER} \
-                -e DB_PASSWORD=${DB_PASS} \
-                webcis-backend:ci \
+        withCredentials([
+          string(credentialsId: 'db_password', variable: 'DB_PASS'),
+          string(credentialsId: 'db_user', variable: 'DB_USER'),
+          string(credentialsId: 'db_name', variable: 'DB_NAME')
+        ]) {
+          sh '''
+            docker run --rm \
+              --network ${CI_NETWORK} \
+              -e DB_CONNECTION=mariadb \
+              -e DB_HOST=${CI_DB_CONTAINER} \
+              -e DB_DATABASE=${DB_NAME} \
+              -e DB_USERNAME=${DB_USER} \
+              -e DB_PASSWORD=${DB_PASS} \
+              webcis-backend:ci \
+              sh -c "
+                php artisan config:clear &&
+                php artisan cache:clear &&
                 php artisan migrate --force
-            '''
+              "
+          '''
 
-            sh '''
-              docker run --rm webcis-backend:ci php artisan --version
-              docker run --rm webcis-backend:ci composer --version
-            '''
+          sh '''
+            docker run --rm webcis-backend:ci php artisan --version
+            docker run --rm webcis-backend:ci composer --version
+          '''
         }
       }
     }
@@ -117,7 +148,11 @@ pipeline {
 
   post {
     always {
-      sh 'docker image prune -f || true'
+      sh '''
+        docker rm -f ${CI_DB_CONTAINER} || true
+        docker network rm ${CI_NETWORK} || true
+        docker image prune -f || true
+      '''
     }
 
     success {
