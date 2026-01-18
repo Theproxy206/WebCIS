@@ -66,7 +66,7 @@ pipeline {
           echo "Waiting for MariaDB..."
           for i in {1..20}; do
             docker exec ci-mariadb mariadb-admin ping \
-              -uroot -proot --silent && break
+              -uroot -proot && break
             sleep 2
           done
         '''
