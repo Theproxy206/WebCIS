@@ -64,9 +64,11 @@ pipeline {
       steps {
         sh '''
           echo "Waiting for MariaDB..."
-          for i in {1..20}; do
-            docker exec ci-mariadb mariadb-admin ping \
-              -uroot -proot && break
+          until docker exec ci-mariadb mariadb-admin ping \
+            -h127.0.0.1 \
+            --protocol=tcp \
+            -uroot -proot; do
+            echo "MariaDB aún no lista..."
             sleep 2
           done
         '''
