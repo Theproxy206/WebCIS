@@ -70,17 +70,18 @@ pipeline {
       }
     }
 
-    stage('CI - Wait for MariaDB') {
+    stage('CI - Wait For MariaDB') {
       when {
         changeRequest target: 'dev'
       }
       steps {
         sh '''
-          echo "Esperando a MariaDB..."
-          until docker exec ${CI_DB_CONTAINER} mysqladmin ping -h "localhost" --silent; do
+          echo "Waiting for MariaDB..."
+          for i in {1..20}; do
+            docker exec ci-mariadb mariadb-admin ping \
+              -uroot -proot --silent && break
             sleep 2
           done
-          echo "MariaDB lista"
         '''
       }
     }
