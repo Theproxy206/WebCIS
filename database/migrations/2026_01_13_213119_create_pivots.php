@@ -23,27 +23,25 @@ return new class extends Migration
         });
 
         Schema::create('courses_users', function (Blueprint $table) {
+            $table->foreignUuid('fk_users')->references('user_id')->on('users');
             $table->string('fk_courses', 12);
-            $table->string('fk_users', 36);
 
             $table->char('type', 3);
 
             $table->primary(['fk_courses', 'fk_users']);
 
             $table->foreign('fk_courses')->references('cou_token')->on('courses');
-            $table->foreign('fk_users')->references('user_id')->on('users');
         });
 
         Schema::create('users_lessons', function (Blueprint $table) {
+            $table->foreign('fk_users')->references('user_id')->on('users');
             $table->unsignedBigInteger('fk_lessons');
-            $table->string('fk_users', 36);
 
             $table->boolean('completed');
 
             $table->primary(['fk_lessons', 'fk_users']);
 
             $table->foreign('fk_lessons')->references('les_serial')->on('lessons');
-            $table->foreign('fk_users')->references('user_id')->on('users');
         });
 
         Schema::create('subjects_courses', function (Blueprint $table) {
