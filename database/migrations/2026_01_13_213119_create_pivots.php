@@ -12,14 +12,14 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('users_medals', function (Blueprint $table) {
-            $table->string('fk_users', 36);
+            $table->uuid('fk_users');
             $table->unsignedInteger('fk_medals');
 
             $table->timestampTz('obtained_at');
 
             $table->primary(['fk_users', 'fk_medals']);
 
-            $table->foreign('fk_users')->references('user_id')->on('users');
+            $table->foreignUuid('fk_users')->references('user_id')->on('users');
             $table->foreign('fk_medals')->references('med_serial')->on('medals');
         });
 
