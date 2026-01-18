@@ -93,12 +93,8 @@ pipeline {
               -e DB_DATABASE=${DB_NAME} \
               -e DB_USERNAME=${DB_USER} \
               -e DB_PASSWORD=${DB_PASS} \
-              -e CACHE_DRIVER=array \
-              -e SESSION_DRIVER=array \
               webcis-backend:ci \
               sh -c "
-                php artisan config:clear &&
-                php artisan cache:clear &&
                 php artisan migrate --force
               "
           '''
