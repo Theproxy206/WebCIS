@@ -23,18 +23,6 @@ pipeline {
     /* =========================
        PR → DEV : CI
     ========================== */
-    stage('CI - Prepare Network') {
-      when {
-        changeRequest target: 'dev'
-      }
-      steps {
-        sh '''
-          docker network rm ${CI_NETWORK} || true
-          docker network create ${CI_NETWORK}
-        '''
-      }
-    }
-
     stage('CI - Build Image') {
       when {
         changeRequest target: 'dev'
@@ -59,7 +47,6 @@ pipeline {
 
             docker run -d \
               --name ${CI_DB_CONTAINER} \
-              --network ${CI_NETWORK} \
               -e MARIADB_DATABASE=${DB_NAME} \
               -e MARIADB_USER=${DB_USER} \
               -e MARIADB_PASSWORD=${DB_PASS} \
@@ -98,7 +85,7 @@ pipeline {
         ]) {
           sh '''
             docker run --rm \
-              --network ${CI_NETWORK} \
+              --link ${CI_DB_CONTAINER}:db \
               -e DB_CONNECTION=mariadb \
               -e DB_HOST=${CI_DB_CONTAINER} \
               -e DB_DATABASE=${DB_NAME} \
