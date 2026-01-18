@@ -1,5 +1,7 @@
 pipeline {
-  agent any
+  agent {
+    label 'raspberry'
+  }
 
   environment {
     IMAGE_NAME = "wcis-backend"
