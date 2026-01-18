@@ -17,7 +17,6 @@ return new class extends Migration
             $table->timestampTz('mat_publication_date');
             $table->string('mat_code', 14);
             $table->string('mat_description', 300)->nullable();
-            $table->string('fk_materials_users', 36);
             $table->foreignUuid('fk_materials_users')->references('user_id')->on('users');
         });
 

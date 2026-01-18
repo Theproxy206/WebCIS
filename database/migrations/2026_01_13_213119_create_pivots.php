@@ -12,39 +12,36 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('users_medals', function (Blueprint $table) {
-            $table->string('fk_users', 36);
+            $table->foreignUuid('fk_users')->references('user_id')->on('users');
             $table->unsignedInteger('fk_medals');
 
             $table->timestampTz('obtained_at');
 
             $table->primary(['fk_users', 'fk_medals']);
 
-            $table->foreign('fk_users')->references('user_id')->on('users');
             $table->foreign('fk_medals')->references('med_serial')->on('medals');
         });
 
         Schema::create('courses_users', function (Blueprint $table) {
+            $table->foreignUuid('fk_users')->references('user_id')->on('users');
             $table->string('fk_courses', 12);
-            $table->string('fk_users', 36);
 
             $table->char('type', 3);
 
             $table->primary(['fk_courses', 'fk_users']);
 
             $table->foreign('fk_courses')->references('cou_token')->on('courses');
-            $table->foreign('fk_users')->references('user_id')->on('users');
         });
 
         Schema::create('users_lessons', function (Blueprint $table) {
-            $table->unsignedBigInteger('fk_lessons');
-            $table->string('fk_users', 36);
+            $table->foreignUuid('fk_users')->references('user_id')->on('users');
+            $table->unsignedInteger('fk_lessons');
 
             $table->boolean('completed');
 
             $table->primary(['fk_lessons', 'fk_users']);
 
             $table->foreign('fk_lessons')->references('les_serial')->on('lessons');
-            $table->foreign('fk_users')->references('user_id')->on('users');
         });
 
         Schema::create('subjects_courses', function (Blueprint $table) {
