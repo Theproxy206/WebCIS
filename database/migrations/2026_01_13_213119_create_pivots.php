@@ -35,7 +35,7 @@ return new class extends Migration
 
         Schema::create('users_lessons', function (Blueprint $table) {
             $table->foreignUuid('fk_users')->references('user_id')->on('users');
-            $table->unsignedBigInteger('fk_lessons');
+            $table->unsignedInteger('fk_lessons');
 
             $table->boolean('completed');
 
