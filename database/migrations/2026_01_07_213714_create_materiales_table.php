@@ -18,7 +18,7 @@ return new class extends Migration
             $table->string('mat_code', 14);
             $table->string('mat_description', 300)->nullable();
             $table->string('fk_materials_users', 36);
-            $table->foreign('fk_materials_users')->references('user_id')->on('users');
+            $table->foreignUuid('fk_materials_users')->references('user_id')->on('users');
         });
 
         Schema::create('extensions', function (Blueprint $table){
