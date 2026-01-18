@@ -87,7 +87,7 @@ pipeline {
             docker run --rm \
               --link ${CI_DB_CONTAINER}:db \
               -e DB_CONNECTION=mariadb \
-              -e DB_HOST=${CI_DB_CONTAINER} \
+              -e DB_HOST=db \
               -e DB_DATABASE=${DB_NAME} \
               -e DB_USERNAME=${DB_USER} \
               -e DB_PASSWORD=${DB_PASS} \
