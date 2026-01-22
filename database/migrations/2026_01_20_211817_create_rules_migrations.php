@@ -19,7 +19,7 @@ return new class extends Migration
 
         Schema::create('users_rules', function (Blueprint $table) {
             $table->foreignUuid('fk_users')->references('user_id')->on('users');
-            $table->foreignId('fk_rules')->constrained('rules');
+            $table->foreignId('fk_rules')->references('rule_serial')->on('rules');
             $table->boolean('granted')->default(false);
 
             $table->primary(['fk_users', 'fk_rules']);
