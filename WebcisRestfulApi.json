@@ -1,0 +1,29 @@
+{
+    "openapi": "3.1.0",
+    "info": {
+        "title": "Title",
+        "description": "Title",
+        "version": "1.0.0"
+    },
+    "servers": [
+        {
+            "url": "https://webcis.veracruz.tecnm.mx/"
+        }
+    ],
+    "paths": {
+        "/api/v1/login": {
+            "post": {
+                "summary": "Login Endpoint",
+                "description": "Endpoint for user authentication",
+                "responses": {
+                    "200": {
+                        "description": "Login Successful"
+                    },
+                    "401": {
+                        "description": "Incorrect credentials"
+                    }
+                }
+            }
+        }
+    }
+}
