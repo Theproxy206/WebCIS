@@ -44,6 +44,7 @@ return new class extends Migration
             $table->string('col_names', 50);
             $table->string('col_surname', 40)->nullable();
             $table->string('col_second_surname', 40)->nullable();
+            $table->unsignedTinyInteger('col_type');
             $table->timestampsTz();
         });
 
