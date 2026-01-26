@@ -1,5 +1,8 @@
 <?php
 
+use App\Exceptions\Auth\EmailSenderException;
+use App\Exceptions\Auth\TokenGenerationException;
+use App\Exceptions\Auth\TokenStorageException;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
@@ -15,5 +18,21 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->statefulApi();
     })
     ->withExceptions(function (Exceptions $exceptions): void {
-        //
+        $exceptions->render(function (TokenGenerationException $e) {
+            return response()->json([
+                'message' => $e->getMessage(),
+            ], $e->getCode());
+        });
+
+        $exceptions->render(function (TokenStorageException $e) {
+            return response()->json([
+                'message' => $e->getMessage(),
+            ], $e->getCode());
+        });
+
+        $exceptions->render(function (EmailSenderException $e) {
+            return response()->json([
+                'message' => $e->getMessage(),
+            ], $e->getCode());
+        });
     })->create();
