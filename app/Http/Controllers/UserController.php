@@ -9,10 +9,14 @@ use App\Http\Requests\SendEmailVerificationRequest;
 use App\Http\Requests\VerifyEmailRequest;
 use App\Http\Services\EmailSenderService;
 use App\Http\Services\LoginService;
+use App\Http\Services\TokenCheckService;
 use App\Http\Services\TokenSavingService;
 use App\Http\Services\TokenGeneratorService;
 use App\Mail\VerificationEmail;
+use App\Models\User;
+use App\Models\UserTemp;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Support\Facades\Hash;
 
 class UserController extends Controller
 {
@@ -49,7 +53,14 @@ class UserController extends Controller
 
     public function verifyEmail(VerifyEmailRequest $request)
     {
-        //
-    }
+        TokenCheckService::verify($request->input('email'), $request->input('token'), TokenPurpose::EmailVerification);
 
+        $tokenPayload = TokenGeneratorService::generateToken(TokenType::Token, 32);
+        TokenSavingService::store($request->input('email'), $tokenPayload['hash'], TokenPurpose::RegisterCompletion, 120);
+
+        return response()->json([
+            'message' => 'Verification successful',
+            'token' => $tokenPayload['plain']
+        ], 201);
+    }
 }

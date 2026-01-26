@@ -7,7 +7,7 @@ use Throwable;
 
 class EmailSenderException extends DomainException
 {
-    protected $message = 'Unable to send verification email';
+    protected $message = 'Unable to send email';
     protected $code = 500;
 
     public function __construct(?Throwable $previous = null)

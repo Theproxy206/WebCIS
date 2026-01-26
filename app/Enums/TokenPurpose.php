@@ -29,32 +29,22 @@ enum TokenPurpose: int
     case PasswordReset = 1;
 
     /**
+     * Token used for register completion
+     */
+    case RegisterCompletion = 2;
+
+    /**
      * Returns the expiration time in minutes
      * based on its purpose.
      *
-     * @return int expiration time in minutes
+     * @return int|null expiration time in minutes
      */
-    public function expiresInMinutes(): int
+    public function expiresInMinutes(): int|null
     {
         return match ($this) {
             self::EmailVerification => 15,
             self::PasswordReset => 10,
-        };
-    }
-
-    /**
-     * Returns a secure token
-     * based on its purpose
-     *
-     * @param int|null $length token length
-     * @return string token type
-     * @throws RandomException
-     */
-    public function generateToken(int $length = null) : string
-    {
-        return match ($this) {
-            self::EmailVerification => $length ? Str::random($length) : Str::random(64),
-            self::PasswordReset => $length ? (string) random_int(10 ** ($length - 1), (10 ** $length) - 1) : (string) random_int(1000, 9999),
+            self::RegisterCompletion => 120,
         };
     }
 }
