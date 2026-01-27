@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use Illuminate\Http\Request;
 use App\Enums\TokenPurpose;
 use App\Enums\TokenType;
 use App\Enums\UserType;
@@ -11,6 +12,18 @@ use App\Http\Requests\SendEmailVerificationRequest;
 use App\Http\Requests\VerifyEmailRequest;
 use App\Http\Services\EmailSenderService;
 use App\Http\Services\LoginService;
+use App\Http\Services\PasswordResetService;
+
+class UserController extends Controller
+{
+    public function __construct(
+        private LoginService $loginService,
+        private PasswordResetService $passwordService
+    ) {}
+
+    /**
+     * Autenticación de usuario
+     */
 use App\Http\Services\TokenCheckService;
 use App\Http\Services\TokenSavingService;
 use App\Http\Services\TokenGeneratorService;
@@ -89,5 +102,28 @@ class UserController extends Controller
             'message' => 'User created successfully',
             'user' => $newUser,
         ], 201);
+    }
+
+    /**
+     * Enviar enlace de recuperación de contraseña
+     */
+    public function sendResetLink(Request $request) {
+        // Validamos aquí o puedes crear un Request específico
+        $request->validate(['email' => 'required|email']);
+        
+        return $this->passwordService->sendLink($request->only('email'));
+    }
+
+    /**
+     * Ejecutar el cambio de contraseña
+     */
+    public function resetPassword(Request $request) {
+        $request->validate([
+            'token' => 'required',
+            'email' => 'required|email',
+            'password' => 'required|min:8|confirmed',
+        ]);
+
+        return $this->passwordService->reset($request->all());
     }
 }
