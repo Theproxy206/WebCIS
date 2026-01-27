@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Enums\UserType;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Laravel\Sanctum\HasApiTokens;
@@ -26,6 +27,9 @@ class User extends Authenticatable
         'user_name',
         'user_surname',
         'user_second_surname'
+    ];
+    protected $casts = [
+        'user_type' => UserType::class,
     ];
     public $timestamps = true;
 

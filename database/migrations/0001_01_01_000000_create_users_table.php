@@ -29,10 +29,11 @@ return new class extends Migration
 
         Schema::create('users_temp', function (Blueprint $table) {
             $table->string('user_email', 255);
-            $table->string('token', 32)->nullable();
-            $table->unsignedTinyInteger('user_type');
+            $table->string('token', 60)->nullable();
+            $table->timestampTz('expires_at');
             $table->unsignedTinyInteger('request_type');
             $table->timestampsTz();
+            $table->primary('user_email');
         });
 
         Schema::create('collaborators', function (Blueprint $table) {
@@ -56,15 +57,14 @@ return new class extends Migration
             $table->timestampsTz();
         });
 
-        # No es necesaria, pero guardare por ahora como referencia
-        #Schema::create('sessions', function (Blueprint $table) {
-        #    $table->string('id')->primary();
-        #    $table->foreignId('user_id')->nullable()->index();
-        #    $table->string('ip_address', 45)->nullable();
-        #    $table->text('user_agent')->nullable();
-        #    $table->longText('payload');
-        #    $table->integer('last_activity')->index();
-        #});
+        Schema::create('sessions', function (Blueprint $table) {
+            $table->string('id')->primary();
+            $table->foreignId('user_id')->nullable()->index();
+            $table->string('ip_address', 45)->nullable();
+            $table->text('user_agent')->nullable();
+            $table->longText('payload');
+            $table->integer('last_activity')->index();
+        });
     }
 
     /**
