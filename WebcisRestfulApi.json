@@ -11,7 +11,167 @@
         }
     ],
     "paths": {
-        "/api/v1/login": {
+        "/api/v1/auth/register": {
+            "post": {
+                "description": "Endpoint to register a new user",
+                "summary": "Register a user",
+                "requestBody": {
+                    "description": "Secure token and user register data",
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "string",
+                                "content": {
+                                    "token": {
+                                        "type": "string",
+                                        "required": true
+                                    },
+                                    "email": {
+                                        "type": "string",
+                                        "format": "email",
+                                        "required": true
+                                    },
+                                    "username": {
+                                        "type": "string",
+                                        "required": true
+                                    },
+                                    "password": {
+                                        "type": "string",
+                                        "required": true
+                                    },
+                                    "names": {
+                                        "type": "string",
+                                        "required": true
+                                    },
+                                    "surname": {
+                                        "type": "string",
+                                        "required": true
+                                    },
+                                    "second_surname": {
+                                        "type": "string",
+                                        "required": false
+                                    },
+                                    "type": {
+                                        "type": "enum",
+                                        "required": true
+                                    }
+                                }
+                            },
+                            "examples": {
+                                "studentRegister": {
+                                    "summary": "Register a user",
+                                    "value": {
+                                        "token": "K7tZ9jL2mN1bV3xQ5wR8yP0oI9uU7yT6rE5dW4qA3sS2dF1gH0jJ9kK8lL7mN6b",
+                                        "email": "example@mail.com",
+                                        "username": "student01",
+                                        "password": "secure_password",
+                                        "names": "John",
+                                        "surname": "Doe",
+                                        "second_surname": "Due",
+                                        "type": "Student"
+                                    }
+                                },
+                                "professorRegister": {
+                                    "summary": "Register a professor",
+                                    "value": {
+                                        "token": "K7tZ9jL2mN1bV3xQ5wR8yP0oI9uU7yT6rE5dW4qA3sS2dF1gH0jJ9kK8lL7mN6b",
+                                        "email": "example@mail.com",
+                                        "username": "professorItver",
+                                        "password": "secure_password",
+                                        "names": "John",
+                                        "surname": "Doe",
+                                        "type": "Professor"
+                                    }
+                                },
+                                "externRegister": {
+                                    "summary": "Register a extern",
+                                    "value": {
+                                        "token": "K7tZ9jL2mN1bV3xQ5wR8yP0oI9uU7yT6rE5dW4qA3sS2dF1gH0jJ9kK8lL7mN6b",
+                                        "email": "example@mail.com",
+                                        "username": "graduate-user",
+                                        "password": "secure_password",
+                                        "names": "John",
+                                        "surname": "Doe",
+                                        "second_surname": "Due",
+                                        "type": "Extern"
+                                    }
+                                },
+                                "adminRegister": {
+                                    "summary": "Register a admin",
+                                    "value": {
+                                        "token": "K7tZ9jL2mN1bV3xQ5wR8yP0oI9uU7yT6rE5dW4qA3sS2dF1gH0jJ9kK8lL7mN6b",
+                                        "email": "example@mail.com",
+                                        "username": "adminCC",
+                                        "password": "secure_password",
+                                        "names": "John",
+                                        "surname": "Doe",
+                                        "type": "Admin"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "The token is valid and has been created a new user",
+                        "content": {
+                            "application/json": {
+                                "examples": {
+                                    "successCase": {
+                                        "summary": "New user created",
+                                        "value": {
+                                            "message": "User created successfully",
+                                            "user": {
+                                                "username": "guest001",
+                                                "email": "example@email.com",
+                                                "name": "John",
+                                                "surname": "Doe",
+                                                "second_surname": "Doe",
+                                                "type": "Student",
+                                                "created_at": "2026-01-26T12:34:56+00:00"
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "The given token is expired or invalid",
+                        "content": {
+                            "application/json": {
+                                "examples": {
+                                    "invalidToken": {
+                                        "summary": "Invalid Token",
+                                        "value": {
+                                            "message": "Expired or invalid token"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Server encounter an error when creating a new user",
+                        "content": {
+                            "application/json": {
+                                "examples": {
+                                    "userStorageFailed": {
+                                        "summary": "User storage failed",
+                                        "value": {
+                                            "message": "Failed to create new user"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/auth/login": {
             "post": {
                 "summary": "Login Endpoint",
                 "description": "Endpoint for user authentication",
@@ -21,6 +181,170 @@
                     },
                     "401": {
                         "description": "Incorrect credentials"
+                    }
+                }
+            }
+        },
+        "/api/v1/email/verification": {
+            "post": {
+                "summary": "Sends a verification email",
+                "description": "Given an email, sends a verification email with a token",
+                "requestBody": {
+                    "description": "The body needs to give the email to ve verified",
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "string",
+                                "content": {
+                                    "email": {
+                                        "type": "string",
+                                        "format": "email"
+                                    }
+                                }
+                            },
+                            "examples": {
+                                "correctBody": {
+                                    "summary": "Body with email to be verified",
+                                    "value": {
+                                        "email": "example@mail.com"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "202": {
+                        "description": "Verification email send",
+                        "content": {
+                            "application/json": {
+                                "examples": {
+                                    "successCase": {
+                                        "summary": "Verification email send",
+                                        "value": {
+                                            "message": "If the email exists, a verification email will be sent"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal errors",
+                        "content": {
+                            "application/json": {
+                                "examples": {
+                                    "tokenGenerationException": {
+                                        "summary": "Secure token generation error",
+                                        "value": {
+                                            "message": "Failed to generate secure token"
+                                        }
+                                    },
+                                    "tokenStorageException": {
+                                        "summary": "Failed to storage new secure token",
+                                        "value": {
+                                            "message": "Failed to store token"
+                                        }
+                                    },
+                                    "emailSenderException": {
+                                        "summary": "Failed to send verification email",
+                                        "value": {
+                                            "message": "Unable to send email"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/email/verification/confirm": {
+            "post": {
+                "summary": "Confirms a email",
+                "description": "Given a token and email, checks and confirms the email or fails",
+                "requestBody": {
+                    "description": "Email to verify and linked secure token",
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "string",
+                                "content": {
+                                    "email": {
+                                        "type": "string",
+                                        "format": "email"
+                                    },
+                                    "token": {
+                                        "type": "string"
+                                    }
+                                }
+                            },
+                            "examples": {
+                                "correctBody": {
+                                    "summary": "Email and verification token",
+                                    "value": {
+                                        "email": "example@mail.com",
+                                        "token": "K7tZ9jL2mN1bV3xQ5wR8yP0oI9uU7yT6rE5dW4qA3sS2dF1gH0jJ9kK8lL7mN6b"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Verifies the email and returns a secure token to register",
+                        "content": {
+                            "application/json": {
+                                "examples": {
+                                    "successCase": {
+                                        "summary": "Email verified",
+                                        "value": {
+                                            "message": "Verification successful",
+                                            "token":"2bXJNUcZVdtZfUUzbEgfvvaawOCfOgvK"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Response when the token is expired or invalid",
+                        "content": {
+                            "application/json": {
+                                "examples": {
+                                    "failedAuth": {
+                                        "summary": "Error response",
+                                        "value": {
+                                            "message": "Expired or invalid token"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Internal errors",
+                        "content": {
+                            "application/json": {
+                                "examples": {
+                                    "tokenGenerationException": {
+                                        "summary": "Secure token generation error",
+                                        "value": {
+                                            "message": "Failed to generate secure token"
+                                        }
+                                    },
+                                    "tokenStorageException": {
+                                        "summary": "Failed to storage new secure token",
+                                        "value": {
+                                            "message": "Failed to store token"
+                                        }
+                                    }
+                                }
+                            }
+                        }
                     }
                 }
             }
