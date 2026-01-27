@@ -8,6 +8,7 @@ pipeline {
     CI_DB_CONTAINER = "ci-mariadb"
     PROD_CONTAINER = "wcis-backend-prod"
     CI_NETWORK = "ci-net"
+    TEST_CONTAINER = "wcis-backend-test"
   }
 
   stages {
@@ -133,6 +134,34 @@ pipeline {
             ${IMAGE_NAME}:latest
         '''
       }
+    }
+
+    /*=================================
+         DEV : BUILD + DEPLOY
+      =================================*/
+    stage('Build Test Image') {
+          when {
+            branch 'dev'
+          }
+          steps {
+            sh 'docker build -t ${IMAGE_NAME}:latest .'
+          }
+    }
+
+    stage('Deploy test to Raspberry') {
+          when {
+            branch 'dev'
+          }
+          steps {
+            sh '''
+              docker rm -f ${TEST_CONTAINER} || true
+
+              docker run -d \
+                --name ${TEST_CONTAINER} \
+                -p 81:80 \
+                ${IMAGE_NAME}:latest
+            '''
+          }
     }
   }
 
