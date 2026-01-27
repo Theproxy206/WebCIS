@@ -4,7 +4,9 @@ namespace App\Http\Controllers;
 
 use App\Enums\TokenPurpose;
 use App\Enums\TokenType;
+use App\Enums\UserType;
 use App\Http\Requests\LoginRequest;
+use App\Http\Requests\RegisterRequest;
 use App\Http\Requests\SendEmailVerificationRequest;
 use App\Http\Requests\VerifyEmailRequest;
 use App\Http\Services\EmailSenderService;
@@ -12,6 +14,7 @@ use App\Http\Services\LoginService;
 use App\Http\Services\TokenCheckService;
 use App\Http\Services\TokenSavingService;
 use App\Http\Services\TokenGeneratorService;
+use App\Http\Services\UserRegisterService;
 use App\Mail\VerificationEmail;
 use App\Models\User;
 use App\Models\UserTemp;
@@ -61,6 +64,30 @@ class UserController extends Controller
         return response()->json([
             'message' => 'Verification successful',
             'token' => $tokenPayload['plain']
+        ], 201);
+    }
+
+    public function register(RegisterRequest $request)
+    {
+        TokenCheckService::verify(
+            $request->input('email'),
+            $request->input('token'),
+            TokenPurpose::RegisterCompletion
+        );
+
+        $newUser = UserRegisterService::create(
+            $request->input('email'),
+            $request->input('username'),
+            $request->input('password'),
+            $request->input('names'),
+            $request->input('surname'),
+            $request->input('second_surname'),
+            UserType::from($request->input('type')),
+        );
+
+        return response()->json([
+            'message' => 'User created successfully',
+            'user' => $newUser,
         ], 201);
     }
 }
