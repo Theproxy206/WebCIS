@@ -14,7 +14,7 @@ class MaterialService
     }
 
     public static function store(array $data): Material {
-        $data['fk_materials_users'] = Auth::id(); // Asigna el usuario logueado
+        $data['fk_materials_users'] = Auth::id();
         return Material::query()->create($data);
     }
 
