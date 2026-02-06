@@ -12,4 +12,4 @@ Route::post('/vi/email/verification/confirm', [UserController::class, 'verifyEma
 
 
 
-Route::get('/v1/Explorer_courses', [CourseController::class, 'getExplorerCourses']);
+Route::get('/v1/explorer-courses', [CourseController::class, 'getExplorerCourses']);
