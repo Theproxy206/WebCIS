@@ -6,11 +6,13 @@ use App\Enums\TokenPurpose;
 use App\Enums\TokenType;
 use App\Enums\UserType;
 use App\Http\Requests\LoginRequest;
+use App\Http\Requests\LogoutRequest;
 use App\Http\Requests\RegisterRequest;
 use App\Http\Requests\SendEmailVerificationRequest;
 use App\Http\Requests\VerifyEmailRequest;
 use App\Http\Services\EmailSenderService;
 use App\Http\Services\LoginService;
+use App\Http\Services\LogoutService;
 use App\Http\Services\TokenCheckService;
 use App\Http\Services\TokenSavingService;
 use App\Http\Services\TokenGeneratorService;
@@ -23,6 +25,16 @@ use Illuminate\Support\Facades\Hash;
 
 class UserController extends Controller
 {
+    public function __construct(
+        private readonly TokenGeneratorService $tokenGenerator,
+        private readonly TokenSavingService    $tokenSaving,
+        private readonly TokenCheckService     $tokenCheck,
+        private readonly EmailSenderService    $emailSender,
+        private readonly UserRegisterService   $userRegister,
+        private readonly LoginService $loginService,
+        private readonly LogoutService $logoutRequest
+    ) {}
+
     public function login(LoginRequest $request) {
         $login = $request->login;
         $password = $request->password;
@@ -34,7 +46,7 @@ class UserController extends Controller
             'password' => $password,
         ];
 
-        return LoginService::execute($credentials, $request);
+        return $this->loginService->execute($credentials, $request);
     }
 
     /**
@@ -43,11 +55,11 @@ class UserController extends Controller
      */
     public function sendVerificationEmail(SendEmailVerificationRequest $request) : JsonResponse
     {
-        $tokenPayload = TokenGeneratorService::generateToken(TokenType::Token);
+        $tokenPayload = $this->tokenGenerator->generateToken(TokenType::Token);
 
-        TokenSavingService::store($request->email, $tokenPayload['hash'], TokenPurpose::EmailVerification);
+        $this->tokenSaving->store($request->email, $tokenPayload['hash'], TokenPurpose::EmailVerification);
 
-        EmailSenderService::send($request->email, new VerificationEmail($tokenPayload['plain']));
+        $this->emailSender->send($request->email, new VerificationEmail($tokenPayload['plain']));
 
         return response()->json([
             'message' => 'If the email exists, a verification email will be sent'
@@ -56,10 +68,10 @@ class UserController extends Controller
 
     public function verifyEmail(VerifyEmailRequest $request)
     {
-        TokenCheckService::verify($request->input('email'), $request->input('token'), TokenPurpose::EmailVerification);
+        $this->tokenCheck->verify($request->input('email'), $request->input('token'), TokenPurpose::EmailVerification);
 
-        $tokenPayload = TokenGeneratorService::generateToken(TokenType::Token, 32);
-        TokenSavingService::store($request->input('email'), $tokenPayload['hash'], TokenPurpose::RegisterCompletion, 120);
+        $tokenPayload = $this->tokenGenerator->generateToken(TokenType::Token, 32);
+        $this->tokenSaving->store($request->input('email'), $tokenPayload['hash'], TokenPurpose::RegisterCompletion, 120);
 
         return response()->json([
             'message' => 'Verification successful',
@@ -69,13 +81,13 @@ class UserController extends Controller
 
     public function register(RegisterRequest $request)
     {
-        TokenCheckService::verify(
+        $this->tokenCheck->verify(
             $request->input('email'),
             $request->input('token'),
             TokenPurpose::RegisterCompletion
         );
 
-        $newUser = UserRegisterService::create(
+        $newUser = $this->userRegister->create(
             $request->input('email'),
             $request->input('username'),
             $request->input('password'),
@@ -89,5 +101,14 @@ class UserController extends Controller
             'message' => 'User created successfully',
             'user' => $newUser,
         ], 201);
+    }
+
+    public function logout(LogoutRequest $request)
+    {
+        $this->logoutRequest->logout($request);
+
+        return response()->json([
+            'message' => 'User logged out successfully',
+        ]);
     }
 }

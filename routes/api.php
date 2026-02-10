@@ -4,11 +4,13 @@ use App\Http\Controllers\MaterialController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\UserController;
 
-Route::post('/v1/auth/login', [UserController::class, 'login'])->middleware('auth:sanctum');
-Route::post('/v1/auth/register', [UserController::class, 'register'])->middleware('auth:sanctum');
+Route::post('/v1/auth/login', [UserController::class, 'login'])->middleware('web');
+Route::post('/v1/auth/logout', [UserController::class, 'logout'])->middleware('web');
 
-Route::post('/v1/email/verification', [UserController::class, 'sendVerificationEmail'])->middleware('auth:sanctum');
-Route::post('/vi/email/verification/confirm', [UserController::class, 'verifyEmail'])->middleware('auth:sanctum');
+Route::post('/v1/auth/register', [UserController::class, 'register']);
+
+Route::post('/v1/email/verification', [UserController::class, 'sendVerificationEmail']);
+Route::post('/v1/email/verification/confirm', [UserController::class, 'verifyEmail']);
 
 
 Route::get('/v1/materials', [MaterialController::class, 'index'])->middleware('auth:sanctum');
