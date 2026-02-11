@@ -10,12 +10,16 @@ use Illuminate\Http\JsonResponse;
 
 class MaterialController extends Controller
 {
+    public function __construct(
+        private readonly MaterialService $materialService
+    ) {}
+
     public function index(): JsonResponse {
-        return response()->json(MaterialService::getAll());
+        return response()->json($this->materialService->getAll());
     }
 
     public function store(StoreMaterialRequest $request): JsonResponse {
-        $material = MaterialService::store($request->validated());
+        $material = $this->materialService->store($request->validated());
         return response()->json(['message' => 'Created', 'data' => $material], 201);
     }
 
@@ -24,12 +28,12 @@ class MaterialController extends Controller
     }
 
     public function update(UpdateMaterialRequest $request, Material $material): JsonResponse {
-        $updated = MaterialService::update($material, $request->validated());
+        $updated = $this->materialService->update($material, $request->validated());
         return response()->json(['message' => 'Updated', 'data' => $updated]);
     }
 
     public function destroy(Material $material): JsonResponse {
-        MaterialService::delete($material);
+        $this->materialService->delete($material);
         return response()->json(['message' => 'Deleted']);
     }
 }

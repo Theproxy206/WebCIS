@@ -5,6 +5,7 @@ namespace App\Models;
 use App\Enums\UserType;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Support\Str;
 use Laravel\Sanctum\HasApiTokens;
 
 class User extends Authenticatable
@@ -32,6 +33,15 @@ class User extends Authenticatable
         'user_type' => UserType::class,
     ];
     public $timestamps = true;
+
+    protected static function booted(): void
+    {
+        static::creating(function ($model) {
+            if (empty($model->{$model->getKeyName()})) {
+                $model->{$model->getKeyName()} = (string) Str::uuid();
+            }
+        });
+    }
 
     public function getAuthPassword()
     {
