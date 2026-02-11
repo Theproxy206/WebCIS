@@ -49,11 +49,11 @@ services:
     networks:
       - webcis
     healthcheck:
-      test: [ "CMD", "mariadb-admin", "ping", "-h", "127.0.0.1" ]
-      interval: 10s
+      test: [ "CMD-SHELL", "mariadb-admin ping -h 127.0.0.1 -u root -p$MARIADB_ROOT_PASSWORD || exit 1" ]
+      interval: 5s
       timeout: 5s
       retries: 10
-      start_period: 10s
+      start_period: 30s
 
 
   mailpit:
