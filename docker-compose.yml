@@ -1,0 +1,73 @@
+version: "3.9"
+
+services:
+
+  app:
+    build:
+      context: .
+      dockerfile: docker/php/Dockerfile
+    image: webcis-backend
+    container_name: webcis-backend
+    restart: unless-stopped
+    env_file:
+      - .env
+    working_dir: /var/www
+    volumes:
+      - .:/var/www
+    depends_on:
+      mariadb:
+        condition: service_healthy
+    networks:
+      - webcis
+
+  queue:
+    image: webcis-backend
+    container_name: webcis-queue
+    restart: unless-stopped
+    env_file:
+      - .env
+    working_dir: /var/www
+    volumes:
+      - .:/var/www
+    command: php artisan queue:work --sleep=3 --tries=3 --timeout=90
+    depends_on:
+      mariadb:
+        condition: service_healthy
+    networks:
+      - webcis
+
+  mariadb:
+    image: mariadb:11
+    container_name: webcis-mariadb
+    restart: unless-stopped
+    env_file:
+      - .env
+    volumes:
+      - mariadb_data:/var/lib/mysql
+    ports:
+      - "3306:3306"
+    networks:
+      - webcis
+    healthcheck:
+      test: [ "CMD", "mariadb-admin", "ping", "-h", "127.0.0.1" ]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 10s
+
+
+  mailpit:
+    image: axllent/mailpit
+    container_name: webcis-mailpit
+    restart: unless-stopped
+    ports:
+      - "8025:8025"
+      - "1025:1025"
+    networks:
+      - webcis
+
+volumes:
+  mariadb_data:
+
+networks:
+  webcis:
