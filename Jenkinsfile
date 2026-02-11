@@ -28,6 +28,7 @@ pipeline {
         ]) {
           sh '''
             echo "Preparing testing .env"
+            rm -f .env || true
             cp ${ENV_FILE} .env
 
             echo "Stopping any previous CI stack"
@@ -40,6 +41,8 @@ pipeline {
             docker compose -f ${COMPOSE_BASE} up -d
 
             docker compose exec -T app php artisan migrate --force
+
+            rm -f .env
           '''
         }
       }
@@ -56,6 +59,7 @@ pipeline {
         ]) {
           sh '''
             echo "Preparing staging .env"
+            rm -f .env || true
             cp ${ENV_FILE} .env
 
             echo "Stopping previous staging stack"
@@ -80,6 +84,8 @@ pipeline {
               -f ${COMPOSE_BASE} \
               -f ${COMPOSE_STAGING} \
               exec -T app php artisan migrate --force
+
+            rm -f .env
           '''
         }
       }
@@ -96,6 +102,7 @@ pipeline {
         ]) {
           sh '''
             echo "Preparing production .env"
+            rm -f .env || true
             cp ${ENV_FILE} .env
 
             echo "Stopping previous prod stack"
@@ -120,6 +127,8 @@ pipeline {
               -f ${COMPOSE_BASE} \
               -f ${COMPOSE_PROD} \
               exec -T app php artisan migrate --force
+
+            rm -f .env
           '''
         }
       }
