@@ -164,6 +164,17 @@ pipeline {
         }
       }
     }
+
+    stage('CLean test containers') {
+        when { changeRequest target: 'dev' }
+        steps {
+            sh '''
+                echo "Stopping any previous CI stack"
+                docker compose -f ${COMPOSE_BASE} down -v --rmi all || true
+                echo "Successfully cleared the environment c:"
+            '''
+        }
+    }
   }
 
   post {
