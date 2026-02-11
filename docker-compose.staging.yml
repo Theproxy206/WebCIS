@@ -1,0 +1,17 @@
+services:
+
+  app:
+    container_name: webcis-app-staging
+    ports:
+      - "81:80"
+    environment:
+      APP_ENV: staging
+      APP_DEBUG: "true"
+
+  mariadb:
+    container_name: webcis-mariadb-staging
+    volumes:
+      - mariadb_data_staging:/var/lib/mysql
+
+volumes:
+  mariadb_data_staging:

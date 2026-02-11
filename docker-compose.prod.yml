@@ -1,0 +1,21 @@
+services:
+
+  app:
+    container_name: webcis-app-prod
+    ports:
+      - "82:80"
+    environment:
+      APP_ENV: production
+      APP_DEBUG: "false"
+
+  mariadb:
+    container_name: webcis-mariadb-prod
+    volumes:
+      - mariadb_data_prod:/var/lib/mysql
+
+  queue:
+    container_name: webcis-app-prod
+    command: php artisan queue:work --sleep=3 --tries=3 --max-time=3600
+
+volumes:
+  mariadb_data_prod:
