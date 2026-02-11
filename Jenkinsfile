@@ -45,8 +45,6 @@ pipeline {
               sleep 5
             done
 
-            composer install --no-interaction --prefer-dist --optimize-autoloader
-
             docker compose exec -T app php artisan migrate --force
 
             rm -f .env
