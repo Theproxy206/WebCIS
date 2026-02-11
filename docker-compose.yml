@@ -19,6 +19,12 @@ services:
         condition: service_healthy
     networks:
       - webcis
+    healthcheck:
+      test: [ "CMD", "php", "-v" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
 
   queue:
     image: webcis-backend

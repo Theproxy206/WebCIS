@@ -40,6 +40,11 @@ pipeline {
             echo "Starting CI environment"
             docker compose -f ${COMPOSE_BASE} up -d
 
+            until [ "$(docker inspect --format='{{.State.Health.Status}}' webcis-backend)" = "healthy" ]; do
+              echo "Waiting for app..."
+              sleep 5
+            done
+
             docker compose exec -T app php artisan migrate --force
 
             rm -f .env
@@ -79,6 +84,11 @@ pipeline {
               -f ${COMPOSE_BASE} \
               -f ${COMPOSE_STAGING} \
               up -d
+
+            until [ "$(docker inspect --format='{{.State.Health.Status}}' webcis-backend)" = "healthy" ]; do
+              echo "Waiting for app..."
+              sleep 5
+            done
 
             docker compose \
               -f ${COMPOSE_BASE} \
@@ -122,6 +132,11 @@ pipeline {
               -f ${COMPOSE_BASE} \
               -f ${COMPOSE_PROD} \
               up -d
+
+            until [ "$(docker inspect --format='{{.State.Health.Status}}' webcis-backend)" = "healthy" ]; do
+              echo "Waiting for app..."
+              sleep 5
+            done
 
             docker compose \
               -f ${COMPOSE_BASE} \
