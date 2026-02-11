@@ -45,6 +45,8 @@ pipeline {
               sleep 5
             done
 
+            composer install --no-interaction --prefer-dist --optimize-autoloader
+
             docker compose exec -T app php artisan migrate --force
 
             rm -f .env
@@ -69,19 +71,16 @@ pipeline {
 
             echo "Stopping previous staging stack"
             docker compose \
-              -f ${COMPOSE_BASE} \
               -f ${COMPOSE_STAGING} \
               down
 
             echo "Building staging image"
             docker compose \
-              -f ${COMPOSE_BASE} \
               -f ${COMPOSE_STAGING} \
               build
 
             echo "Starting staging"
             docker compose \
-              -f ${COMPOSE_BASE} \
               -f ${COMPOSE_STAGING} \
               up -d
 
@@ -91,7 +90,18 @@ pipeline {
             done
 
             docker compose \
-              -f ${COMPOSE_BASE} \
+                -f ${COMPOSE_STAGING} \
+                exec -T app php artisan config:cache
+
+            docker compose \
+                -f ${COMPOSE_STAGING} \
+                exec -T app php artisan route:cache
+
+            docker compose \
+                -f ${COMPOSE_STAGING} \
+                exec -T app php artisan view:cache
+
+            docker compose \
               -f ${COMPOSE_STAGING} \
               exec -T app php artisan migrate --force
 
@@ -117,19 +127,16 @@ pipeline {
 
             echo "Stopping previous prod stack"
             docker compose \
-              -f ${COMPOSE_BASE} \
               -f ${COMPOSE_PROD} \
               down
 
             echo "Building production image"
             docker compose \
-              -f ${COMPOSE_BASE} \
               -f ${COMPOSE_PROD} \
               build
 
             echo "Starting production"
             docker compose \
-              -f ${COMPOSE_BASE} \
               -f ${COMPOSE_PROD} \
               up -d
 
@@ -139,7 +146,18 @@ pipeline {
             done
 
             docker compose \
-              -f ${COMPOSE_BASE} \
+                -f ${COMPOSE_PROD} \
+                exec -T app php artisan config:cache
+
+            docker compose \
+                -f ${COMPOSE_PROD} \
+                exec -T app php artisan route:cache
+
+            docker compose \
+                -f ${COMPOSE_PROD} \
+                exec -T app php artisan view:cache
+
+            docker compose \
               -f ${COMPOSE_PROD} \
               exec -T app php artisan migrate --force
 

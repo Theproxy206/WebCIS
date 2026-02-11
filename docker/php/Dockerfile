@@ -51,7 +51,7 @@ Require all granted\n\
 </Directory>\n' >> /etc/httpd/conf/httpd.conf
 
 # Proyecto
-COPY ../.. ${APP_DIR}
+COPY . ${APP_DIR}
 
 # Permisos Laravel
 RUN chown -R apache:apache ${APP_DIR} && \
