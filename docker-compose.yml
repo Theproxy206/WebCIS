@@ -21,9 +21,10 @@ services:
       - webcis
     healthcheck:
       test: [ "CMD", "php", "-v" ]
-      interval: 10s
+      interval: 5s
       timeout: 5s
-      retries: 5
+      retries: 10
+      start_period: 30s
 
 
   queue:
