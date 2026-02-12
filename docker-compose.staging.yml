@@ -4,7 +4,7 @@ services:
     build:
       context: .
       dockerfile: docker/php/Dockerfile
-    image: "webcis-api-pre:1.0.0"
+    image: "webcis-api:staging"
     container_name: webcis-api-staging
     ports:
       - "81:80"
@@ -29,7 +29,7 @@ services:
 
 
   queue:
-    image: "webcis-api-pre:1.0.0"
+    image: "webcis-api:staging"
     container_name: webcis-queue-staging
     restart: unless-stopped
     env_file:
@@ -64,7 +64,7 @@ services:
 
   mailpit:
     image: axllent/mailpit
-    container_name: webcis-mailpit
+    container_name: webcis-mailpit-staging
     restart: unless-stopped
     ports:
       - "8025:8025"
