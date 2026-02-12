@@ -1,38 +1,54 @@
 <?php
 
-namespace App\Http\Services;
+namespace App\Services;
 
-use Illuminate\Support\Facades\Password;
+use App\Enums\TokenPurpose;
+use App\Enums\TokenType;
+use App\Models\User;
+use App\Services\TokenGeneratorService;
+use App\Services\TokenSavingService;
+use App\Services\EmailSenderService;
+use App\Mail\ResetPasswordEmail; // Deberás crear este Mailable
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Http\JsonResponse;
 
 class PasswordResetService
 {
     /**
-     * Lógica para enviar el link al email
+     * Phase 1: Generate token and send email using your custom services.
      */
-    public function sendLink(array $email): JsonResponse
+    public function sendLink(array $data): void
     {
-        $status = Password::sendResetLink($email);
+        $email = $data['email'];
+        $user = User::where('user_email', $email)->first();
 
-        return $status === Password::RESET_LINK_SENT
-            ? response()->json(['message' => 'Te hemos enviado un correo con el enlace de recuperación.'])
-            : response()->json(['error' => 'No pudimos enviar el correo.'], 400);
+        // If user doesn't exist, we do nothing (Privacy),
+        // but we don't throw an error so the controller returns 202.
+        if ($user) {
+            $tokenPayload = TokenGeneratorService::generateToken(TokenType::Token);
+
+            TokenSavingService::store(
+                $email,
+                $tokenPayload['hash'],
+                TokenPurpose::PasswordReset
+            );
+
+            EmailSenderService::send(
+                $email,
+                new ResetPasswordEmail($tokenPayload['plain'])
+            );
+        }
     }
 
     /**
-     * Lógica para resetear la contraseña en la DB
+     * Phase 3: Update the password in the database.
+     * Note: Token was already verified and deleted in Phase 2 by TokenCheckService.
      */
-    public function reset(array $data): JsonResponse
+    public function reset(array $data): void
     {
-        $status = Password::reset($data, function ($user, $password) {
-            $user->forceFill([
-                'password' => Hash::make($password)
-            ])->save();
-        });
+        $user = User::where('user_email', $data['email'])->firstOrFail();
 
-        return $status === Password::PASSWORD_RESET
-            ? response()->json(['message' => 'Tu contraseña ha sido actualizada con éxito.'])
-            : response()->json(['error' => 'El token o el email son inválidos.'], 400);
+        $user->forceFill([
+            'user_password' => Hash::make($data['password'])
+        ])->save();
     }
 }

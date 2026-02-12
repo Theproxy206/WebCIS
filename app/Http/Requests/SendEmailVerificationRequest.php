@@ -11,7 +11,7 @@ class SendEmailVerificationRequest extends FormRequest
      */
     public function authorize(): bool
     {
-        return false;
+        return true;
     }
 
     /**
@@ -25,4 +25,11 @@ class SendEmailVerificationRequest extends FormRequest
             'email' => 'required|email'
         ];
     }
+    public function messages(): array
+    {
+        return [
+            'email.exists' => 'This email address is not registered in our records.',
+        ];
+    }
 }
+

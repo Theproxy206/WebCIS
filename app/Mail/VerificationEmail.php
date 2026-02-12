@@ -3,9 +3,7 @@
 namespace App\Mail;
 
 use Illuminate\Bus\Queueable;
-use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Mail\Mailable;
-use Illuminate\Mail\Mailables\Attachment;
 use Illuminate\Mail\Mailables\Content;
 use Illuminate\Mail\Mailables\Envelope;
 use Illuminate\Queue\SerializesModels;
@@ -15,43 +13,40 @@ class VerificationEmail extends Mailable
     use Queueable, SerializesModels;
 
     /**
-     * Create a new verification email instance.
+     * @param string $token El código que viene del servicio
      */
     public function __construct(
         public string $token
     ) {}
 
     /**
-     * Get the message envelope.
-     *
-     * @class VerificationEmail
-     * @return Envelope
+     * El asunto que Sergio definió originalmente
      */
     public function envelope(): Envelope
     {
         return new Envelope(
-            subject: '[WebCIS] Por favor, verifica tu correo',
+            subject: 'Verificación de correo',
         );
     }
 
     /**
-     * Get the message content definition.
-     *
-     * @class VerificationEmail
-     * @return Content
+     * Aquí inyectamos los textos CLAVE de Sergio
      */
     public function content(): Content
     {
         return new Content(
-            view: 'mails.verification-email',
+            view: 'mails.auth-token',
+            with: [
+                'subject'   => 'Verificación de correo',
+                // TEXTO EXACTO DE SERGIO (Copiado y pegado tal cual):
+                'introText' => 'Recibimos una solicitud para verificar esta dirección de correo electrónico. Si fuiste tú, usa el siguiente código para completar el proceso:',
+
+                // TEXTO EXACTO DE SERGIO (Copiado y pegado tal cual):
+                'footerText' => 'Este código tiene una vigencia limitada. Si no solicitaste esta verificación, puedes ignorar este correo con tranquilidad.'
+            ],
         );
     }
 
-    /**
-     * Get the attachments for the message.
-     *
-     * @return array<int, Attachment>
-     */
     public function attachments(): array
     {
         return [];
