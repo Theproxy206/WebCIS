@@ -67,8 +67,8 @@ services:
     container_name: webcis-mailpit-prod
     restart: unless-stopped
     ports:
-      - "8025:8025"
-      - "1025:1025"
+      - "8027:8025"
+      - "1027:1025"
     networks:
       - webcis
 

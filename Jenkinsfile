@@ -82,7 +82,7 @@ pipeline {
               -f ${COMPOSE_STAGING} \
               up -d
 
-            until [ "$(docker inspect --format='{{.State.Health.Status}}' webcis-api:staging)" = "healthy" ]; do
+            until [ "$(docker inspect --format='{{.State.Health.Status}}' webcis-api-staging)" = "healthy" ]; do
               echo "Waiting for app..."
               sleep 5
             done
@@ -138,7 +138,7 @@ pipeline {
               -f ${COMPOSE_PROD} \
               up -d
 
-            until [ "$(docker inspect --format='{{.State.Health.Status}}' webcis-api:prod)" = "healthy" ]; do
+            until [ "$(docker inspect --format='{{.State.Health.Status}}' webcis-api-prod)" = "healthy" ]; do
               echo "Waiting for app..."
               sleep 5
             done
