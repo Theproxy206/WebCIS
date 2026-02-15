@@ -1,14 +1,10 @@
 pipeline {
-  agent {
-    label 'raspberry'
-  }
+  agent { label 'raspberry' }
 
   environment {
-    IMAGE_NAME = "wcis-backend"
-    CI_DB_CONTAINER = "ci-mariadb"
-    PROD_CONTAINER = "wcis-backend-prod"
-    CI_NETWORK = "ci-net"
-    TEST_CONTAINER = "wcis-backend-test"
+    COMPOSE_BASE = "docker-compose.yml"
+    COMPOSE_STAGING = "docker-compose.staging.yml"
+    COMPOSE_PROD = "docker-compose.prod.yml"
   }
 
   stages {
@@ -22,158 +18,166 @@ pipeline {
     }
 
     /* =========================
-       PR → DEV : CI
+       PR → DEV : CI TEMPORAL
     ========================== */
-    stage('CI - Build Image') {
-      when {
-        changeRequest target: 'dev'
-      }
-      steps {
-        sh 'docker build -t webcis-backend:ci .'
-      }
-    }
-
-    stage('CI - Start MariaDB') {
-      when {
-        changeRequest target: 'dev'
-      }
+    stage('CI - Testing Environment') {
+      when { changeRequest target: 'dev' }
       steps {
         withCredentials([
-          string(credentialsId: 'db_password', variable: 'DB_PASS'),
-          string(credentialsId: 'db_user', variable: 'DB_USER'),
-          string(credentialsId: 'db_name', variable: 'DB_NAME')
+          file(credentialsId: 'webcis-env-test', variable: 'ENV_FILE')
         ]) {
           sh '''
-            docker rm -f ${CI_DB_CONTAINER} || true
+            echo "Preparing testing .env"
+            rm -f .env || true
+            cp ${ENV_FILE} .env
 
-            docker run -d \
-              --name ${CI_DB_CONTAINER} \
-              -e MARIADB_DATABASE=${DB_NAME} \
-              -e MARIADB_USER=${DB_USER} \
-              -e MARIADB_PASSWORD=${DB_PASS} \
-              -e MARIADB_ROOT_PASSWORD=root \
-              mariadb:11
-          '''
-        }
-      }
-    }
+            echo "Stopping any previous CI stack"
+            docker compose -f ${COMPOSE_BASE} down -v || true
 
-    stage('CI - Wait For MariaDB') {
-      when {
-        changeRequest target: 'dev'
-      }
-      steps {
-        sh '''
-          echo "Waiting for MariaDB..."
-          until docker exec ci-mariadb mariadb-admin ping \
-            -h127.0.0.1 \
-            --protocol=tcp \
-            -uroot -proot; do
-            echo "MariaDB aún no lista..."
-            sleep 2
-          done
-        '''
-      }
-    }
+            echo "Building images"
+            docker compose -f ${COMPOSE_BASE} build
 
-    stage('CI - Run Migrations & Checks') {
-      when {
-        changeRequest target: 'dev'
-      }
-      steps {
-        withCredentials([
-          string(credentialsId: 'db_password', variable: 'DB_PASS'),
-          string(credentialsId: 'db_user', variable: 'DB_USER'),
-          string(credentialsId: 'db_name', variable: 'DB_NAME')
-        ]) {
-          sh '''
-            docker run --rm \
-              --link ${CI_DB_CONTAINER}:db \
-              -e DB_CONNECTION=mariadb \
-              -e DB_HOST=db \
-              -e DB_DATABASE=${DB_NAME} \
-              -e DB_USERNAME=${DB_USER} \
-              -e DB_PASSWORD=${DB_PASS} \
-              webcis-backend:ci \
-              sh -c "
-                php artisan migrate --force
-              "
-          '''
+            echo "Starting CI environment"
+            docker compose -f ${COMPOSE_BASE} up -d
 
-          sh '''
-            docker run --rm webcis-backend:ci php artisan --version
-            docker run --rm webcis-backend:ci composer --version
+            until [ "$(docker inspect --format='{{.State.Health.Status}}' webcis-backend)" = "healthy" ]; do
+              echo "Waiting for app..."
+              sleep 5
+            done
+
+            docker compose exec -T app php artisan migrate --force
+
+            rm -f .env
           '''
         }
       }
     }
 
     /* =========================
-       MAIN : BUILD + DEPLOY
+       DEV : STAGING DEPLOY
     ========================== */
-    stage('Build Production Image') {
-      when {
-        branch 'main'
-      }
+    stage('Deploy Staging') {
+      when { branch 'dev' }
       steps {
-        sh 'docker build -t ${IMAGE_NAME}:latest .'
+        withCredentials([
+          file(credentialsId: 'webcis-env-staging', variable: 'ENV_FILE')
+        ]) {
+          sh '''
+            echo "Preparing staging .env"
+            rm -f .env || true
+            cp ${ENV_FILE} .env
+
+            echo "Stopping previous staging stack"
+            docker compose \
+              -f ${COMPOSE_STAGING} \
+              down
+
+            echo "Building staging image"
+            docker compose \
+              -f ${COMPOSE_STAGING} \
+              build
+
+            echo "Starting staging"
+            docker compose \
+              -f ${COMPOSE_STAGING} \
+              up -d
+
+            until [ "$(docker inspect --format='{{.State.Health.Status}}' webcis-api-staging)" = "healthy" ]; do
+              echo "Waiting for app..."
+              sleep 5
+            done
+
+            docker compose \
+                -f ${COMPOSE_STAGING} \
+                exec -T app php artisan config:cache
+
+            docker compose \
+                -f ${COMPOSE_STAGING} \
+                exec -T app php artisan route:cache
+
+            docker compose \
+                -f ${COMPOSE_STAGING} \
+                exec -T app php artisan view:cache
+
+            docker compose \
+              -f ${COMPOSE_STAGING} \
+              exec -T app php artisan migrate --force
+
+            rm -f .env
+          '''
+        }
       }
     }
 
-    stage('Deploy to Raspberry') {
-      when {
-        branch 'main'
-      }
+    /* =========================
+       MAIN : PRODUCTION DEPLOY
+    ========================== */
+    stage('Deploy Production') {
+      when { branch 'main' }
       steps {
-        sh '''
-          docker rm -f ${PROD_CONTAINER} || true
+        withCredentials([
+          file(credentialsId: 'webcis-env-production', variable: 'ENV_FILE')
+        ]) {
+          sh '''
+            echo "Preparing production .env"
+            rm -f .env || true
+            cp ${ENV_FILE} .env
 
-          docker run -d \
-            --name ${PROD_CONTAINER} \
-            -p 80:80 \
-            ${IMAGE_NAME}:latest
-        '''
+            echo "Stopping previous prod stack"
+            docker compose \
+              -f ${COMPOSE_PROD} \
+              down
+
+            echo "Building production image"
+            docker compose \
+              -f ${COMPOSE_PROD} \
+              build
+
+            echo "Starting production"
+            docker compose \
+              -f ${COMPOSE_PROD} \
+              up -d
+
+            until [ "$(docker inspect --format='{{.State.Health.Status}}' webcis-api-prod)" = "healthy" ]; do
+              echo "Waiting for app..."
+              sleep 5
+            done
+
+            docker compose \
+                -f ${COMPOSE_PROD} \
+                exec -T app php artisan config:cache
+
+            docker compose \
+                -f ${COMPOSE_PROD} \
+                exec -T app php artisan route:cache
+
+            docker compose \
+                -f ${COMPOSE_PROD} \
+                exec -T app php artisan view:cache
+
+            docker compose \
+              -f ${COMPOSE_PROD} \
+              exec -T app php artisan migrate --force
+
+            rm -f .env
+          '''
+        }
       }
     }
 
-    /*=================================
-         DEV : BUILD + DEPLOY
-      =================================*/
-    stage('Build Test Image') {
-          when {
-            branch 'dev'
-          }
-          steps {
-            sh 'docker build -t ${IMAGE_NAME}:latest .'
-          }
-    }
-
-    stage('Deploy test to Raspberry') {
-          when {
-            branch 'dev'
-          }
-          steps {
+    stage('CLean test containers') {
+        when { changeRequest target: 'dev' }
+        steps {
             sh '''
-              docker rm -f ${TEST_CONTAINER} || true
-
-              docker run -d \
-                --name ${TEST_CONTAINER} \
-                -p 81:80 \
-                ${IMAGE_NAME}:latest
+                echo "Stopping any previous CI stack"
+                docker compose -f ${COMPOSE_BASE} down -v --rmi all || true
+                echo "Successfully cleared the environment c:"
             '''
-          }
+        }
     }
   }
 
   post {
-    always {
-      sh '''
-        docker rm -f ${CI_DB_CONTAINER} || true
-        docker network rm ${CI_NETWORK} || true
-        docker image prune -f || true
-      '''
-    }
-
     success {
       echo "Pipeline OK"
     }

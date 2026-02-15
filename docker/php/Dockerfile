@@ -1,18 +1,16 @@
 FROM rockylinux:9
 
-# Variables básicas
 ENV TZ=America/Mexico_City
 ENV APP_DIR=/var/www/html
 
-# Actualizar sistema e instalar repositorios necesarios
+# Sistema base + repos
 RUN dnf -y update && \
     dnf -y install epel-release && \
-    dnf -y install \
-        https://rpms.remirepo.net/enterprise/remi-release-9.rpm && \
+    dnf -y install https://rpms.remirepo.net/enterprise/remi-release-9.rpm && \
     dnf module reset php -y && \
     dnf module enable php:remi-8.3 -y
 
-# Instalar Apache, PHP 8.3 y extensiones necesarias para Laravel
+# Apache + PHP (libphp)
 RUN dnf -y install \
     httpd \
     php \
@@ -31,19 +29,31 @@ RUN dnf -y install \
     unzip \
     && dnf clean all
 
-# Instalar Composer
+# Forzar MPM prefork (CRÍTICO)
+RUN rm -f /etc/httpd/conf.modules.d/00-mpm.conf && \
+    echo "LoadModule mpm_prefork_module modules/mod_mpm_prefork.so" \
+    > /etc/httpd/conf.modules.d/00-mpm.conf
+
+# Eliminar cualquier rastro de PHP-FPM
+RUN rm -f /etc/httpd/conf.d/php-fpm.conf \
+          /etc/httpd/conf.modules.d/10-proxy_fcgi.conf
+
+# Composer
 RUN curl -sS https://getcomposer.org/installer \
     | php -- --install-dir=/usr/local/bin --filename=composer
 
-# Configuración de Apache
-RUN sed -i 's|DocumentRoot "/var/www/html"|DocumentRoot "/var/www/html/public"|' /etc/httpd/conf/httpd.conf && \
-    sed -i 's|<Directory "/var/www/html">|<Directory "/var/www/html/public">|' /etc/httpd/conf/httpd.conf && \
-    sed -i 's|AllowOverride None|AllowOverride All|' /etc/httpd/conf/httpd.conf
+# Apache config correcta para Laravel
+RUN sed -i 's|DocumentRoot "/var/www/html"|DocumentRoot "/var/www/html/public"|' \
+        /etc/httpd/conf/httpd.conf && \
+    printf '\n<Directory "/var/www/html/public">\n\
+AllowOverride All\n\
+Require all granted\n\
+</Directory>\n' >> /etc/httpd/conf/httpd.conf
 
-# Copiar el proyecto Laravel
+# Proyecto
 COPY . ${APP_DIR}
 
-# Permisos para Laravel
+# Permisos Laravel
 RUN chown -R apache:apache ${APP_DIR} && \
     chmod -R 775 ${APP_DIR}/storage ${APP_DIR}/bootstrap/cache
 
@@ -59,5 +69,4 @@ RUN composer install \
 
 EXPOSE 80
 
-# Apache en primer plano (requerido por Docker)
 CMD ["/usr/sbin/httpd", "-D", "FOREGROUND"]

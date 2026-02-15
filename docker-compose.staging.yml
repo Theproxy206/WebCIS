@@ -1,0 +1,79 @@
+services:
+
+  app:
+    build:
+      context: .
+      dockerfile: docker/php/Dockerfile
+    image: "webcis-api:staging"
+    container_name: webcis-api-staging
+    ports:
+      - "81:80"
+    restart: unless-stopped
+    env_file:
+      - .env
+    environment:
+      APP_ENV: staging
+      APP_DEBUG: "true"
+    working_dir: /var/www/html
+    depends_on:
+      mariadb:
+        condition: service_healthy
+    networks:
+      - webcis
+    healthcheck:
+      test: [ "CMD", "php", "-v" ]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
+
+
+  queue:
+    image: "webcis-api:staging"
+    container_name: webcis-queue-staging
+    restart: unless-stopped
+    env_file:
+      - .env
+    working_dir: /var/www/html
+    command: php artisan queue:work --sleep=3 --tries=3 --timeout=90
+    depends_on:
+      mariadb:
+        condition: service_healthy
+    networks:
+      - webcis
+
+  mariadb:
+    image: mariadb:11
+    container_name: webcis-mariadb-staging
+    restart: unless-stopped
+    env_file:
+      - .env
+    volumes:
+      - mariadb_data_staging:/var/lib/mysql
+    ports:
+      - "3306:3306"
+    networks:
+      - webcis
+    healthcheck:
+      test: [ "CMD-SHELL", "mariadb-admin ping -h 127.0.0.1 -u root -p$MARIADB_ROOT_PASSWORD || exit 1" ]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
+
+
+  mailpit:
+    image: axllent/mailpit
+    container_name: webcis-mailpit-staging
+    restart: unless-stopped
+    ports:
+      - "8026:8025"
+      - "1026:1025"
+    networks:
+      - webcis
+
+volumes:
+  mariadb_data_staging:
+
+networks:
+  webcis:

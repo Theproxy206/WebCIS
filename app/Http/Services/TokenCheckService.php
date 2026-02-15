@@ -25,7 +25,6 @@ class TokenCheckService
     {
         $registry = UserTemp::query()
             ->where('user_email', $email)
-            ->where('token', $token)
             ->where('request_type', $purpose)
             ->first();
 
