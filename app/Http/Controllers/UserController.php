@@ -16,7 +16,6 @@ use App\Http\Requests\LogoutRequest;
 use App\Http\Requests\RegisterRequest;
 use App\Http\Requests\SendEmailVerificationRequest;
 use App\Http\Requests\VerifyEmailRequest;
-use App\Http\Requests\ResetPasswordRequest;
 
 // Services
 use App\Http\Services\EmailSenderService;
@@ -28,10 +27,6 @@ use App\Http\Services\TokenSavingService;
 use App\Http\Services\TokenGeneratorService;
 use App\Http\Services\UserRegisterService;
 use App\Mail\VerificationEmail;
-use App\Models\User;
-use App\Models\UserTemp;
-use Illuminate\Http\JsonResponse;
-use Illuminate\Support\Facades\Hash;
 
 // Exceptions
 use App\Exceptions\Auth\EmailSenderException;
@@ -127,7 +122,7 @@ class UserController extends Controller
             'message' => 'User logged out successfully',
         ]);
     }
-    
+
     /**
      * Recovery - Phase 1: Request Reset Link
      */
@@ -136,17 +131,20 @@ class UserController extends Controller
         $request->validate(['email' => 'required|email']);
 
         try {
-            // El servicio maneja la generación y el envío
-            $this->passwordService->sendLink($request->only('email'));
+            $tokenPayload = $this->tokenGenerator->generateToken(TokenType::Code);
+            $this->tokenSaving->store($request->input('email'), $tokenPayload['hash'], TokenPurpose::PasswordReset);
+            $this->passwordService->sendLink($request->input('email'), $tokenPayload['plain']);
         } catch (EmailSenderException $e) {
+            report($e);
             // Error técnico si falla el servidor de correos
             return response()->json([
-                'error' => 'No pudimos enviar el correo de recuperación. Inténtalo más tarde.'
+                'error' => 'An error occurred while sending reset link'
             ], 503);
         } catch (\Exception $e) {
+            report($e);
             // Error genérico por seguridad
             return response()->json([
-                'error' => 'Ocurrió un error inesperado al procesar la solicitud.'
+                'error' => 'Unexpected error occurred'
             ], 500);
         }
 
@@ -162,35 +160,47 @@ class UserController extends Controller
     {
         $request->validate([
             'email' => 'required|email',
-            'token' => 'required|string'
+            'code' => 'required|string'
         ]);
 
         try {
-            $this->tokenCheckService->verify(
+            $this->tokenCheck->verify(
                 $request->input('email'),
-                $request->input('token'),
+                $request->input('code'),
                 TokenPurpose::PasswordReset
             );
+            $tokenPayload = $this->tokenGenerator->generateToken(TokenType::Token);
+            $this->tokenSaving->store($request->input('email'), $tokenPayload['hash'], TokenPurpose::RegisterCompletion);
         } catch (TokenValidationException $e) {
+            report($e);
             // Error si el token es incorrecto o expiró
             return response()->json([
-                'error' => 'El código de seguridad es inválido o ha expirado.'
-            ], 422);
+                'error' => 'The security code is invalid or expired'
+            ], 403);
         }
 
         return response()->json([
-            'message' => 'Token validated successfully. You may now set a new password.'
-        ], 200);
+            'message' => 'Token validated successfully. You may now set a new password.',
+            'token' => $tokenPayload['plain']
+        ]);
     }
 
     /**
      * Recovery - Phase 3: Execute Reset
      */
-    public function resetPassword(ResetPasswordRequest $request): JsonResponse
+    public function resetPassword(Request $request): JsonResponse
     {
+        $request->validate([
+            'email' => 'required|email',
+            'password' => 'required|string|min:8',
+            'token' => 'required|string'
+        ]);
+
         try {
-            $this->passwordService->reset($request->validated());
+            $this->tokenCheck->verify($request->input('email'), $request->input('token'), TokenPurpose::RegisterCompletion);
+            $this->passwordService->reset($request->input('email'), $request->input('password'));
         } catch (UserStorageException $e) {
+            report($e);
             // Error si falla el guardado final en la base de datos
             return response()->json([
                 'error' => 'No se pudo actualizar la contraseña. Contacta a soporte.'
@@ -199,6 +209,6 @@ class UserController extends Controller
 
         return response()->json([
             'message' => 'Password updated successfully'
-        ], 200);
+        ]);
     }
 }
