@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\MaterialController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\UserController;
 
@@ -13,15 +14,22 @@ use App\Http\Controllers\UserController;
 */
 
 Route::prefix('v1')->group(function () {
+    Route::post('/auth/login', [UserController::class, 'login'])->middleware('web');
+    Route::post('/auth/logout', [UserController::class, 'logout'])->middleware('web');
 
-    // --- PUBLIC ROUTES ---
-    // Access allowed without a token
+    Route::post('/auth/register', [UserController::class, 'register']);
 
-    // Authentication
-    Route::post('/login', [UserController::class, 'login']);
-    Route::post('/register', [UserController::class, 'register']);
+    Route::post('/email/verification', [UserController::class, 'sendVerificationEmail']);
+    Route::post('/email/verification/confirm', [UserController::class, 'verifyEmail']);
 
-    /**
+
+    Route::get('/materials', [MaterialController::class, 'index'])->middleware('auth:sanctum');
+    Route::get('/materials/{material}', [MaterialController::class, 'show'])->middleware('auth:sanctum');
+    Route::post('/materials', [MaterialController::class, 'store'])->middleware('auth:sanctum');
+    Route::put('/materials/{material}', [MaterialController::class, 'update'])->middleware('auth:sanctum');
+    Route::delete('/materials/{material}', [MaterialController::class, 'destroy'])->middleware('auth:sanctum');
+    
+     /**
      * PASSWORD RECOVERY FLOW (3 Phases)
      * This follows the logic requested for granular service testing.
      */
@@ -34,25 +42,4 @@ Route::prefix('v1')->group(function () {
 
     // Phase 3: Update Password (Final execution)
     Route::post('/reset-password', [UserController::class, 'resetPassword']);
-
-
-    // --- PRIVATE ROUTES ---
-    // Requires a valid Sanctum Token ('Authorization: Bearer {token}')
-
-    Route::middleware('auth:sanctum')->group(function () {
-
-        /**
-         * EMAIL VERIFICATION FLOW
-         * These routes are protected because they belong to an existing user session.
-         */
-
-        // Step 1: Request a new verification email
-        Route::post('/email/verification', [UserController::class, 'sendVerificationEmail']);
-
-        // Step 2: Confirm the email using the received token
-        Route::post('/email/verification/confirm', [UserController::class, 'verifyEmail']);
-
-        // User Profile / Other protected actions
-        // Route::get('/user', function (Request $request) { return $request->user(); });
-    });
 });
