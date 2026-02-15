@@ -51,7 +51,7 @@ services:
     volumes:
       - mariadb_data_prod:/var/lib/mysql
     ports:
-      - "3306:3306"
+      - "3309:3306"
     networks:
       - webcis
     healthcheck:
