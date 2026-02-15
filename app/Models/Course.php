@@ -22,7 +22,12 @@ class Course extends Model
     ];
 
     public function lessons(): HasMany
+      {
+          return $this->hasMany(Lesson::class, 'fk_lessons_courses', 'cou_token');
+      }
+
+    public function services(): HasMany
     {
-        return $this->hasMany(Lesson::class, 'fk_lessons_courses', 'cou_token');
+        return $this->hasMany(CourseService::class, 'fk_course_services_courses', 'cou_token');
     }
 }
