@@ -9,13 +9,14 @@ use Illuminate\Support\Facades\Hash;
 
 class UserRegisterService
 {
-    public function create(string $email, string $username, string $password, string $name, string $surname, string $secondSurname, UserType $type) : User
+    public function create(string $email, string $controlNumber, string $username, string $password, string $name, string $surname, string $secondSurname, UserType $type) : User
     {
         $password = Hash::make($password);
 
         try {
             $newUser = new User;
             $newUser->user_email = $email;
+            $newUser->user_control_number = $controlNumber;
             $newUser->user_username = $username;
             $newUser->user_pass = $password;
             $newUser->user_name = $name;
