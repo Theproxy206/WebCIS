@@ -100,6 +100,7 @@ class UserController extends Controller
 
         $newUser = $this->userRegister->create(
             $request->input('email'),
+            $request->input('control_number'),
             $request->input('username'),
             $request->input('password'),
             $request->input('names'),
