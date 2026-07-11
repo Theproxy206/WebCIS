@@ -3,6 +3,7 @@
 use App\Http\Controllers\MaterialController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\UserController;
+use App\Http\Controllers\DashboardController;
 
 /*
 |--------------------------------------------------------------------------
@@ -28,6 +29,8 @@ Route::prefix('v1')->group(function () {
     Route::post('/materials', [MaterialController::class, 'store'])->middleware('auth:sanctum');
     Route::put('/materials/{material}', [MaterialController::class, 'update'])->middleware('auth:sanctum');
     Route::delete('/materials/{material}', [MaterialController::class, 'destroy'])->middleware('auth:sanctum');
+
+    ROute::get('/dashboard', [DashboardController::class, 'index'])->middleware('auth:sanctum');
     
      /**
      * PASSWORD RECOVERY FLOW (3 Phases)
