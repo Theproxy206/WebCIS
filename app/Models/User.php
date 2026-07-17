@@ -5,6 +5,7 @@ namespace App\Models;
 use App\Enums\UserType;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Support\Str;
 use Laravel\Sanctum\HasApiTokens;
 
@@ -56,8 +57,8 @@ class User extends Authenticatable
         return $this->hasMany(Rule::class, 'fk_users', 'user_id')->with('granted');
     }
 
-    public function medals() : HasMany
+    public function medals() : BelongsToMany
     {
-        return $this->hasMany(Medal::class, 'fk_users', 'user_id');
+        return $this->belongsToMany(Medal::class, 'users_medals', 'fk_users', 'fk_medals', 'user_id', 'med_serial')->withPivot('obtained_at');
     }
 }
