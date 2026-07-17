@@ -29,6 +29,9 @@ class User extends Authenticatable
         'user_surname',
         'user_second_surname'
     ];
+    protected $hidden = [
+        'user_pass'
+    ];
     protected $casts = [
         'user_type' => UserType::class,
     ];
@@ -51,5 +54,10 @@ class User extends Authenticatable
     public function rules() : HasMany
     {
         return $this->hasMany(Rule::class, 'fk_users', 'user_id')->with('granted');
+    }
+
+    public function medals() : HasMany
+    {
+        return $this->hasMany(Medal::class, 'fk_users', 'user_id');
     }
 }
