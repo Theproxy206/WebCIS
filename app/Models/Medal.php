@@ -5,9 +5,9 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
-class Course extends Model
+class Medal extends Model
 {
-    protected $table = 'medals'
+    protected $table = 'medals';
     protected $primaryKey = 'med_serial';
     public $incrementing = true;
     protected $keyType = 'unsignedInteger';
