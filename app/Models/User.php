@@ -61,4 +61,9 @@ class User extends Authenticatable
     {
         return $this->belongsToMany(Medal::class, 'users_medals', 'fk_users', 'fk_medals', 'user_id', 'med_serial')->withPivot('obtained_at');
     }
+
+    public function courses() : BelongsToMany
+    {
+        return $this->belongsToMany(Course::class, 'courses_users', 'fk_users', 'fk_courses', 'user_id', 'cou_token')->withPivot(['role', 'status', 'joined_at', 'completed_at', 'last_accessed_at']);
+    }
 }
