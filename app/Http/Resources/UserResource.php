@@ -21,6 +21,7 @@ class UserResource extends JsonResource
             'surname' => $this->user_surname,
             'second_surname' => $this->user_second_surname,
             'type' => $this->user_type->name,
+            'profile' => $this->user_path_profile_picture,
             'created_at' => $this->created_at?->toIso8601String(),
         ];
     }
