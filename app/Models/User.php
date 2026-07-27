@@ -54,16 +54,26 @@ class User extends Authenticatable
 
     public function rules() : HasMany
     {
-        return $this->hasMany(Rule::class, 'fk_users', 'user_id')->with('granted');
+        return $this->hasMany(Rule::class, 'fk_users', 'user_id')
+        ->with('granted');
     }
 
     public function medals() : BelongsToMany
     {
-        return $this->belongsToMany(Medal::class, 'users_medals', 'fk_users', 'fk_medals', 'user_id', 'med_serial')->withPivot('obtained_at');
+        return $this->belongsToMany(Medal::class, 'users_medals', 'fk_users', 'fk_medals', 'user_id', 'med_serial')
+        ->withPivot('obtained_at');
     }
 
     public function courses() : BelongsToMany
     {
-        return $this->belongsToMany(Course::class, 'courses_users', 'fk_users', 'fk_courses', 'user_id', 'cou_token')->withPivot(['role', 'status', 'joined_at', 'completed_at', 'last_accessed_at']);
+        return $this->belongsToMany(Course::class, 'courses_users', 'fk_users', 'fk_courses', 'user_id', 'cou_token')
+        ->as('enrollment')
+        ->withPivot(['role', 'status', 'joined_at', 'completed_at', 'last_accessed_at']);
+    }
+
+    public function lessons() : BelongsToMany
+    {
+        return $this->belongsToMany(Lesson::class, 'users_lessons', 'fk_users', 'fk_lessons', 'user_id', 'les_serial')
+        ->withPivot('completed');
     }
 }
