@@ -26,8 +26,8 @@ return new class extends Migration
             $table->foreignUuid('fk_users')->references('user_id')->on('users');
             $table->string('fk_courses', 12);
 
-            $table->unsignedTinyInteger('role');
-            $table->unsignedTinyInteger('status');
+            $table->unsignedTinyInteger('role')->nullable();
+            $table->unsignedTinyInteger('status')->nullable();
             $table->timestampTz('joined_at')->useCurrent();
             $table->timestampTz('completed_at')->nullable();
             $table->timestampTz('last_accessed_at')->nullable();
