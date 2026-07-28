@@ -27,6 +27,9 @@ Route::prefix('v1')->group(function () {
     Route::post('/email/verification/confirm', [UserController::class, 'verifyEmail']);
 
     Route::get('/dashboard', [DashboardController::class, 'index'])->middleware('auth:sanctum');
+    Route::get('/profile', [ProfileController::class, 'index'])->middleware('auth:sanctum');
+    
+    Route::get('/me', [UserController::class, 'me'])->middleware('auth:sanctum');
 
     Route::get('/materials', [MaterialController::class, 'index'])->middleware('auth:sanctum');
     Route::get('/materials/{material}', [MaterialController::class, 'show'])->middleware('auth:sanctum');
