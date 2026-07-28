@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
 class Course extends Model
 {
+    protected $table = 'courses';
     protected $primaryKey = 'cou_token';
     public $incrementing = false;
     protected $keyType = 'string';

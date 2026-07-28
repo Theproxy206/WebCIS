@@ -9,7 +9,7 @@ class Category extends Model
     protected $table = 'Categories';
     protected $primaryKey = 'cat_serial';
     public $incrementing = true;
-    protected $keyType = unsignedInteger;
+    protected $keyType = 'int';
     protected $fillable = [
         'cat_name'
     ];

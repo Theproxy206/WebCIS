@@ -11,6 +11,8 @@ class Lesson extends Model
 {
     protected $table = 'lessons';
     protected $primaryKey = 'les_serial';
+    protected $keyType = 'int';
+    public $incrementing = true;
 
     protected $fillable = [
         'les_title',

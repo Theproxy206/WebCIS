@@ -33,10 +33,14 @@ class User extends Authenticatable
     protected $hidden = [
         'user_pass'
     ];
-    protected $casts = [
-        'user_type' => UserType::class,
-    ];
     public $timestamps = true;
+
+    protected function casts(): array
+    {
+        return [
+            'user_type' => UserType::class,
+        ];
+    }
 
     protected static function booted(): void
     {
@@ -47,7 +51,7 @@ class User extends Authenticatable
         });
     }
 
-    public function getAuthPassword()
+    public function getAuthPassword(): string
     {
         return $this->user_pass;
     }

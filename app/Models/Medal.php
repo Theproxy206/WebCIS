@@ -10,7 +10,7 @@ class Medal extends Model
     protected $table = 'medals';
     protected $primaryKey = 'med_serial';
     public $incrementing = true;
-    protected $keyType = 'unsignedInteger';
+    protected $keyType = 'int';
 
     protected $fillable = [
         'med_name',
@@ -18,8 +18,8 @@ class Medal extends Model
         'med_path_image',
     ];
 
-    public function lessons(): BelongsToMany
+    public function users(): BelongsToMany
     {
-        return $this->hasMany(User::class, 'users_medals', 'fk_medals', 'fk_users', 'med_serial', 'user_id')->withPivot('obtained_at');
+        return $this->belongsToMany(User::class, 'users_medals', 'fk_medals', 'fk_users', 'med_serial', 'user_id')->withPivot('obtained_at');
     }
 }
