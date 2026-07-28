@@ -7,6 +7,8 @@ use App\Models\User;
 use App\Models\Lesson;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Support\Collection;
 use Illuminate\Database\Eloquent\Builder;
 use App\Enums\EnrollmentStatus;
 use App\Enums\OrderDirection;
@@ -21,14 +23,14 @@ class EnrollmentService {
         ]);
     }
 
-    private function completedLessons(User $user, array $courseTokens): Builder
+    private function completedLessons(User $user, Collection $courseTokens): BelongsToMany
     {
         return $user->lessons()
         ->wherePivot('completed', true)
         ->whereIn('fk_lessons_courses', $courseTokens);
     }
 
-    private function lessonsInCourses(array $courseTokens): Builder
+    private function lessonsInCourses(Collection $courseTokens): Builder
     {
         return Lesson::whereIn(
             'fk_lessons_courses',
