@@ -28,7 +28,7 @@ return new class extends Migration
             $table->string('les_short_title', 60);
             $table->timestampsTz();
             $table->string('fk_lessons_courses', 12);
-            $table->unsignedInteger('fk_lessons_lessons');
+            $table->unsignedInteger('fk_lessons_lessons')->nullable();
             $table->foreign('fk_lessons_courses')->references('cou_token')->on('courses');
             $table->foreign('fk_lessons_lessons')->references('les_serial')->on('lessons');
         });
