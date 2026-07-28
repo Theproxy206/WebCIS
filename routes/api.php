@@ -3,6 +3,10 @@
 use App\Http\Controllers\MaterialController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\UserController;
+use App\Http\Controllers\DashboardController;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use Laravel\Sanctum\Http\Middleware\EnsureFrontendRequestsAreStateful;
 
 /*
 |--------------------------------------------------------------------------
@@ -22,6 +26,7 @@ Route::prefix('v1')->group(function () {
     Route::post('/email/verification', [UserController::class, 'sendVerificationEmail']);
     Route::post('/email/verification/confirm', [UserController::class, 'verifyEmail']);
 
+    Route::get('/dashboard', [DashboardController::class, 'index'])->middleware('auth:sanctum');
 
     Route::get('/materials', [MaterialController::class, 'index'])->middleware('auth:sanctum');
     Route::get('/materials/{material}', [MaterialController::class, 'show'])->middleware('auth:sanctum');
@@ -42,4 +47,43 @@ Route::prefix('v1')->group(function () {
 
     // Phase 3: Update Password (Final execution)
     Route::post('/reset-password', [UserController::class, 'resetPassword']);
+});
+
+Route::prefix('test')->group(function () {
+    Route::get('/', function (Request $request) {
+        return [
+            'request_user' => $request->user(),
+            'auth_user' => Auth::user(),
+            'web_user' => Auth::guard('web')->user(),
+
+            'auth_check' => Auth::check(),
+            'web_check' => Auth::guard('web')->check(),
+
+            'session_id' => session()->getId(),
+        ];
+    })->middleware('web');
+
+    Route::get('/sanctum', function (Request $request) {
+        return [
+            'user' => $request->user(),
+            'auth' => Auth::check(),
+        ];
+    })->middleware('auth:sanctum');
+
+    Route::get('/cookies', function (Request $request) {
+        return [
+            'cookies' => $request->cookies->all(),
+            'session_id' => session()->getId(),
+            'auth' => Auth::check(),
+        ];
+    })->middleware('web');
+
+    Route::get('/stateful', function (Request $request) {
+        return [
+            'origin' => $request->header('Origin'),
+            'referer' => $request->header('Referer'),
+            'host' => $request->getHost(),
+            'is_stateful' => EnsureFrontendRequestsAreStateful::fromFrontend($request),
+        ];
+    });
 });

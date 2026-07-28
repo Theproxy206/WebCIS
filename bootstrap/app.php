@@ -22,6 +22,9 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->web(append: [
             EnsureFrontendRequestsAreStateful::class,
         ]);
+        $middleware->api(append: [
+            EnsureFrontendRequestsAreStateful::class,
+        ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         $exceptions->render(function (TokenGenerationException $e) {
