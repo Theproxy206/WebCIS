@@ -28,7 +28,8 @@ return new class extends Migration
 
             $table->unsignedTinyInteger('role')->nullable();
             $table->unsignedTinyInteger('status')->nullable();
-            $table->timestampTz('joined_at')->useCurrent();
+            $table->timestampTz('created_at')->nullable();
+            $table->timestampTz('joined_at')->nullable();
             $table->timestampTz('completed_at')->nullable();
             $table->timestampTz('last_accessed_at')->nullable();
 
