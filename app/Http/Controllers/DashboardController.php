@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 use App\Http\Services\MedalService;
 use App\Http\Services\EnrollmentService;
+use App\Http\Resources\UserResource;
 
 class DashboardController extends Controller
 {
@@ -21,7 +22,7 @@ class DashboardController extends Controller
             'progress' => $this->enrollments->progress($request->user()),
             'recent_courses' => $this->enrollments->recentCourses($request->user())->map(function ($course) {
                 return [
-                    'token' => $course->course_token,
+                    'token' => $course->cou_token,
                     'title' => $course->cou_title,
                     'short_title' => $course->cou_short_title,
                     'icon' => $course->cou_path_icon,
