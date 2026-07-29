@@ -6,6 +6,7 @@ use App\Models\Medal;
 use App\Models\User;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use App\Enums\OrderDirection;
+use Illuminate\Support\Collection;
 
 class MedalService {
     public function paginate(User $user, int $limit = 10, OrderDirection $order = OrderDirection::Asc): LengthAwarePaginator
@@ -36,5 +37,13 @@ class MedalService {
         return $user->medals()
         ->whereKey($serial)
         ->exists();
+    }
+
+    public function recent(User $user, OrderDirection $order = OrderDirection::Desc, int $limit = 5): Collection
+    {
+        return $user->medals()
+        ->orderByPivot('obtained_at', $order->value)
+        ->limit($limit)
+        ->get();
     }
 }

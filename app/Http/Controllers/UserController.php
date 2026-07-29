@@ -33,6 +33,9 @@ use App\Exceptions\Auth\EmailSenderException;
 use App\Exceptions\Auth\TokenValidationException;
 use App\Exceptions\Auth\UserStorageException;
 
+// Resources
+use App\Http\Resources\UserResource;
+
 class UserController extends Controller
 {
     public function __construct(
@@ -210,6 +213,13 @@ class UserController extends Controller
 
         return response()->json([
             'message' => 'Password updated successfully'
+        ]);
+    }
+
+    public function me(Request $request): JsonResponse
+    {
+        return response()-json([
+            'user' => new UserResource($request->user())
         ]);
     }
 }
