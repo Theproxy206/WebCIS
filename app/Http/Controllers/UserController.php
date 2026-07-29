@@ -218,6 +218,8 @@ class UserController extends Controller
 
     public function me(Request $request): JsonResponse
     {
-        return new UserResource($request->user());
+        return response()-json([
+            'user' => new UserResource($request->user())
+        ]);
     }
 }
