@@ -7,20 +7,16 @@ use App\Models\User;
 use App\Models\Lesson;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Support\Collection;
 use Illuminate\Database\Eloquent\Builder;
 use App\Enums\EnrollmentStatus;
 use App\Enums\OrderDirection;
 
 class EnrollmentService {
-    private function activeCourses(User $user): BelongsToMany
+    private function activeCourses(User $user, array $statuses = [EnrollmentStatus::InProgress, EnrollmentStatus::Completed]): BelongsToMany
     {
         return $user->courses()
-        ->wherePivotIn('status', [
-            EnrollmentStatus::InProgress,
-            EnrollmentStatus::Completed,
-        ]);
+        ->wherePivotIn('status', $statuses);
     }
 
     private function completedLessons(User $user, Collection $courseTokens): BelongsToMany
@@ -38,23 +34,23 @@ class EnrollmentService {
         );
     }
 
-    public function paginate(User $user, int $perPage = 10, OrderDirection $order = OrderDirection::Asc, ?array $statuses = null, string $orderBy = 'cou_title'): LengthAwarePaginator
+    public function paginate(User $user, array $statuses, int $perPage = 10, OrderDirection $order = OrderDirection::Asc, string $orderBy = 'cou_title'): LengthAwarePaginator
     {
-        $query = $user->courses()
-        ->wherePivotIn('status', $status);
-
-        if ($statuses !== null) {
-            $query->wherePivotIn('status', $statuses);
-        }
-
-        return $query
+        return $user->courses()
+        ->wherePivotIn('status', $statuses)
         ->orderBy($orderBy, $order->value)
         ->paginate($perPage);
     }
 
-    public function count(User $user): int
+    public function count(User $user, ?array $statuses = null): int
     {
-        return $user->courses()->count();
+        if ($statuses === null) {
+            $statuses = [EnrollmentStatus::InProgress];
+        }
+
+        return $user->courses()
+        ->wherePivotIn('status', $statuses)
+        ->count();
     }
 
     public function findCourse(User $user, string $token): Course
@@ -86,10 +82,38 @@ class EnrollmentService {
         return $totalLessons > 0 ? round(($completedLessons / $totalLessons) * 100, 2) : 0;
     }
 
-    public function recentCourses(User $user, int $limit = 5, OrderDirection $order = OrderDirection::Desc): Collection
+    public function courseProgress(User $user, ?string $token = null): float
     {
-        return $this
-        ->activeCourses($user)
+        if ($token === null) {
+            $token = $this
+            ->activeCourses($user, [EnrollmentStatus::InProgress])
+            ->orderByPivot('last_accessed_at', 'desc')
+            ->firstOrFail()
+            ->cou_token;
+        }
+
+        $completedLessons = $user->lessons()
+        ->wherePivot('completed', true)
+        ->where('fk_lessons_courses', $token)
+        ->count();
+
+        $totalLessons = Lesson::where(
+            'fk_lessons_courses',
+            $token
+        )->count();
+
+        return $totalLessons > 0 ? round(($completedLessons / $totalLessons) * 100, 2) : 0;
+    }
+
+    public function recentCourses(User $user, int $limit = 5, OrderDirection $order = OrderDirection::Desc, ?array $statuses = null): Collection
+    {
+        if ($statuses === null) {
+            $statuses = [EnrollmentStatus::InProgress, EnrollmentStatus::Completed];
+        }
+
+        return $user
+        ->courses()
+        ->wherePivotIn('status', $statuses)
         ->wherePivotNotNull('last_accessed_at')
         ->orderByPivot('last_accessed_at', $order->value)
         ->limit($limit)
