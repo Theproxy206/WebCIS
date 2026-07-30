@@ -54,7 +54,17 @@ class ProfileController extends Controller
 
         return response()->json([
             'message' => 'Profile picture updated successfully.',
-            'user' = new UserResource($user->refresh()),
+            'user' => new UserResource($user->refresh()),
+        ]);
+    }
+
+    public function updateBanner(BannerUpdateRequest $request): JsonResponse
+    {
+        $this->profileService->updateBanner($request->user(), $request->file('image'));
+
+        return response()->json([
+            'message' => 'Banner updated successfully.',
+            'user' => new UserResource($user->refresh()),
         ]);
     }
 }

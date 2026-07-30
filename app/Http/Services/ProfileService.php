@@ -28,7 +28,14 @@ class ProfileService {
 
     public function updateProfilePicture(User $user, UploadedFile $file): User
     {
-        $user->path_profile_picture = $this->storage->store($file, 'profiles');
+        $user->user_path_profile_picture = $this->storage->store($file, 'profiles');
+
+        return $user;
+    }
+
+    public function updateBanner(User $user, UploadedFile $file): User
+    {
+        $user->user_path_banner = $this->storage->store($file, 'banners');
 
         return $user;
     }
