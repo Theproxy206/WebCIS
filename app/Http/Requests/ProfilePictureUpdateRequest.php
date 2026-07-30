@@ -19,6 +19,7 @@ class ProfileUpdateRequest extends FormRequest
             'image',
             'mimes:jpg,jpeg,png,webp',
             'max:2048',
+            'dimensions:min_width=256,min_height=256',
         ],
     ];
 }
