@@ -12,6 +12,7 @@ use App\Http\Services\EnrollmentService;
 use App\Http\Services\MedalService;
 use App\Http\Service\ProfileService;
 use App\Http\Requests\ProfileUpdateRequest;
+use App\Http\Requests\ProfilePictureUpdateRequest;
 
 class ProfileController extends Controller
 {
@@ -36,16 +37,24 @@ class ProfileController extends Controller
 
     public function update(ProfileUpdateRequest $request): JsonResponse
     {
-        $user = $request->user();
-
         $this->profileService->update(
-            $user,
+            $request->user(),
             $request->validated()
         );
 
         return response()->json([
             'message' => 'Profile updated successfully.',
             'user' => new UserResource($user->refresh()),
+        ]);
+    }
+
+    public function updateProfilePicture(ProfilePictureUpdateRequest $request): JsonResponse
+    {
+        this->profileService->updateProfilePicture($request->user(), $request->file('image'));
+
+        return response()->json([
+            'message' => 'Profile picture updated successfully.',
+            'user' = new UserResource($user->refresh()),
         ]);
     }
 }

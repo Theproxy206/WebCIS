@@ -2,13 +2,15 @@
 
 namespace App\Http\Services;
 
-use App\Models\Medal;
 use App\Models\User;
-use Illuminate\Contracts\Pagination\LengthAwarePaginator;
-use App\Enums\OrderDirection;
-use Illuminate\Support\Collection;
+use App\Http\Services\StorageService;
+use Illuminate\Http\UploadedFile;
 
 class ProfileService {
+    public function __construct(
+        private readonly StorageService $storage
+    ) {}
+
     public function update(User $user, array $data): User
     {
         $user->fill([
@@ -20,6 +22,13 @@ class ProfileService {
         ]);
 
         $user->save();
+
+        return $user;
+    }
+
+    public function updateProfilePicture(User $user, UploadedFile $file): User
+    {
+        $user->path_profile_picture = $this->storage->store($file, 'profiles');
 
         return $user;
     }
