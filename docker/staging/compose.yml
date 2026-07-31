@@ -2,7 +2,7 @@ services:
 
   app:
     build:
-      context: .
+      context: ../..
       dockerfile: docker/php/Dockerfile
     image: "webcis-api:staging"
     container_name: webcis-api-staging
