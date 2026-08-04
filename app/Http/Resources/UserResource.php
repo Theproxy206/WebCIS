@@ -24,7 +24,7 @@ class UserResource extends JsonResource
             'second_surname' => $this->user_second_surname,
             'description' => $this->user_description,
             'type' => $this->user_type->name,
-            'profile' => $this->user_path_profile_picture ? Storage::disk('public')->url($this->user_path_profile_picture) : null,
+            'profile_picture' => $this->user_path_profile_picture ? Storage::disk('public')->url($this->user_path_profile_picture) : null,
             'banner' => $this->user_path_banner ? Storage::disk('public')->url($this->user_path_banner) : null,
             'created_at' => $this->created_at?->toIso8601String(),
         ];

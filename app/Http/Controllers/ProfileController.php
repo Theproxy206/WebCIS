@@ -4,15 +4,16 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
+use App\Enums\OrderDirection;
 use App\Http\Resources\UserResource;
 use App\Http\Resources\MedalResource;
 use App\Http\Resources\EnrollmentResource;
-use App\Enums\OrderDirection;
 use App\Http\Services\EnrollmentService;
 use App\Http\Services\MedalService;
-use App\Http\Service\ProfileService;
+use App\Http\Services\ProfileService;
 use App\Http\Requests\ProfileUpdateRequest;
 use App\Http\Requests\ProfilePictureUpdateRequest;
+use App\Http\Requests\BannerUpdateRequest;
 
 class ProfileController extends Controller
 {
@@ -44,27 +45,27 @@ class ProfileController extends Controller
 
         return response()->json([
             'message' => 'Profile updated successfully.',
-            'user' => new UserResource($user->refresh()),
+            'user' => new UserResource($request->user()->refresh()),
         ]);
     }
 
     public function updateProfilePicture(ProfilePictureUpdateRequest $request): JsonResponse
     {
-        this->profileService->updateProfilePicture($request->user(), $request->file('image'));
+        $user = $this->profileService->updateProfilePicture($request->user(), $request->file('image'));
 
         return response()->json([
             'message' => 'Profile picture updated successfully.',
-            'user' => new UserResource($user->refresh()),
+            'user' => new UserResource($user),
         ]);
     }
 
     public function updateBanner(BannerUpdateRequest $request): JsonResponse
     {
-        $this->profileService->updateBanner($request->user(), $request->file('image'));
+        $user = $this->profileService->updateBanner($request->user(), $request->file('image'));
 
         return response()->json([
             'message' => 'Banner updated successfully.',
-            'user' => new UserResource($user->refresh()),
+            'user' => new UserResource($user),
         ]);
     }
 }
