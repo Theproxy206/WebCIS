@@ -20,11 +20,13 @@ class Lesson extends Model
     protected $fillable = [
         'les_title',
         'les_short_title',
+        'les_order',
+        'les_content',
     ];
 
 
     public function course(): BelongsTo {
-        return $this->belongsTo(Course::class, 'fk_lessons_courses', 'cou_token');
+        return $this->belongsTo(Course::class, 'fk_lessons_courses', 'cou_id');
     }
 
     public function parentLesson(): BelongsTo {

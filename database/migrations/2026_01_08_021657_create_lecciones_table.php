@@ -12,13 +12,12 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('courses', function (Blueprint $table) {
-            $table->string('cou_token', 12)->primary();
+            $table->ulid('cou_id')->primary();
             $table->string('cou_title', 200);
             $table->string('cou_short_title', 80);
             $table->string('cou_description', 300)->nullable();
             $table->timestampsTz();
             $table->string('cou_code', 14)->unique();
-            $table->string('cou_content', 255);
             $table->string('cou_path_icon', 255)->nullable();
         });
 
@@ -26,10 +25,11 @@ return new class extends Migration
             $table->unsignedInteger('les_serial', true)->primary();
             $table->string('les_title', 200);
             $table->string('les_short_title', 60);
+            $table->unsignedInteger('les_order');
+            $table->json('les_content')->nullable();
             $table->timestampsTz();
-            $table->string('fk_lessons_courses', 12);
             $table->unsignedInteger('fk_lessons_lessons')->nullable();
-            $table->foreign('fk_lessons_courses')->references('cou_token')->on('courses');
+            $table->foreignUlid('fk_lessons_courses')->references('cou_id')->on('courses');
             $table->foreign('fk_lessons_lessons')->references('les_serial')->on('lessons');
         });
     }

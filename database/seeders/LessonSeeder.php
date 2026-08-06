@@ -2,6 +2,7 @@
 
 namespace Database\Seeders;
 
+use App\Models\Course;
 use App\Models\Lesson;
 use Illuminate\Database\Seeder;
 
@@ -13,7 +14,7 @@ class LessonSeeder extends Seeder
     public function run(): void
     {
         $courses = [
-            '000000000001' => [
+            'LARAVEL-101' => [
                 'Introducción',
                 'Instalación del entorno',
                 'Primer proyecto',
@@ -21,7 +22,7 @@ class LessonSeeder extends Seeder
                 'Rutas',
             ],
 
-            '000000000002' => [
+            'GIT-101' => [
                 '¿Qué es Git?',
                 'Repositorios',
                 'Commits',
@@ -30,20 +31,18 @@ class LessonSeeder extends Seeder
             ],
         ];
 
-        foreach ($courses as $courseToken => $titles) {
+        foreach ($courses as $courseCode => $titles) {
 
-            $parent = null;
+            $course = Course::where('cou_code', $courseCode)->firstOrFail();
 
-            foreach ($titles as $title) {
+            foreach ($titles as $order => $title) {
 
-                $lesson = Lesson::create([
+                Lesson::create([
                     'les_title' => $title,
                     'les_short_title' => mb_strimwidth($title, 0, 60),
-                    'fk_lessons_courses' => $courseToken,
-                    'fk_lessons_lessons' => $parent,
+                    'les_order' => $order + 1,
+                    'fk_lessons_courses' => $course->cou_id,
                 ]);
-
-                $parent = $lesson->les_serial;
             }
         }
     }
