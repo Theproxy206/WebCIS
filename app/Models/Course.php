@@ -58,4 +58,9 @@ class Course extends Model
     {
         return $this->belongsToMany(Category::class, 'categories_courses', 'fk_courses', 'fk_categories', 'cou_id', 'cat_serial');
     }
+
+    public function subjects(): BelongsToMany
+    {
+        return $this->belongsToMany(Subject::class, 'subjects_courses', 'fk_courses', 'fk_subjects', 'cou_id', 'sub_serial');
+    }
 }

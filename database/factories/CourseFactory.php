@@ -5,6 +5,7 @@ namespace Database\Factories;
 use App\Enums\CourseStatus;
 use App\Models\Course;
 use App\Models\Category;
+use App\Models\Subject;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 class CourseFactory extends Factory
@@ -69,6 +70,20 @@ class CourseFactory extends Factory
             $categories = Category::factory()->count(fake()->numberBetween(1, 4))->create();
 
             $course->categories()->attach($categories);
+        });
+    }
+
+    /**
+     * Creates between 1 and 3 subjects and assign them to the course.
+     * 
+     * @return CourseFactory
+     */
+    public function withSubjects(): static
+    {
+        return $this->afterCreating(function (Course $course) {
+            $subjects = Subject::factory()->count(fake()->numberBetween(1, 3))->create();
+
+            $course->subjects()->attach($subjects);
         });
     }
 }
