@@ -58,7 +58,7 @@ class UserFactory extends Factory
     public function withEnrollments(): static
     {
         return $this->afterCreating(function (User $user) {
-            $courses = Course::factory()->count(fake()->numberBetween(1, 5))->create();
+            $courses = Course::factory()->count(fake()->numberBetween(1, 5))->published()->create();
 
             foreach ($courses as $course) {
                 $completed = fake()->boolean();

@@ -53,4 +53,9 @@ class Course extends Model
     {
         return $this->belongsToMany(User::class, 'courses_users', 'fk_courses', 'fk_users', 'cou_id', 'user_id')->withPivot(['role', 'status', 'joined_at', 'completed_at', 'last_accessed_at']);
     }
+
+    public function categories(): BelongsToMany
+    {
+        return $this->belongsToMany(Category::class, 'categories_courses', 'fk_courses', 'fk_categories', 'cou_id', 'cat_serial');
+    }
 }

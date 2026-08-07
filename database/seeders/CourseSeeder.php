@@ -2,6 +2,7 @@
 
 namespace Database\Seeders;
 
+use App\Enums\CourseStatus;
 use App\Models\Course;
 use Illuminate\Database\Seeder;
 
@@ -18,6 +19,7 @@ class CourseSeeder extends Seeder
                 'short_title' => 'Laravel desde cero',
                 'description' => 'Curso de Laravel',
                 'code' => 'LARAVEL-101',
+                'status' => CourseStatus::Published,
                 'path_icon' => null,
             ],
             [
@@ -25,6 +27,7 @@ class CourseSeeder extends Seeder
                 'short_title' => 'Docker desde cero',
                 'description' => 'Curso de Docker',
                 'code' => 'GIT-101',
+                'status' => CourseStatus::Published,
                 'path_icon' => null,
             ],
         ];
@@ -35,6 +38,7 @@ class CourseSeeder extends Seeder
                 'cou_short_title' => $data['short_title'],
                 'cou_description' => $data['description'],
                 'cou_code' => $data['code'],
+                'cou_status' => $data['status'],
                 'cou_path_icon' => $data['path_icon'],
             ]);
         }
