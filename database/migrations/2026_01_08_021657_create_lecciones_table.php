@@ -18,6 +18,7 @@ return new class extends Migration
             $table->string('cou_description', 300)->nullable();
             $table->timestampsTz();
             $table->string('cou_code', 14)->unique();
+            $table->unsignedTinyInteger('cou_status');
             $table->string('cou_path_icon', 255)->nullable();
         });
 

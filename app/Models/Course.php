@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use App\Enums\CourseStatus;
 
 class Course extends Model
 {
@@ -23,8 +24,16 @@ class Course extends Model
         'cou_short_title',
         'cou_description',
         'cou_code',
+        'cou_status',
         'cou_path_icon',
     ];
+
+    protected function casts(): array
+    {
+        return [
+            'cou_status' => CourseStatus::class,
+        ];
+    }
 
     protected static function booted(): void
     {
