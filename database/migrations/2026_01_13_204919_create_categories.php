@@ -19,6 +19,7 @@ return new class extends Migration
 
         Schema::create('categories', function (Blueprint $table) {
             $table->unsignedInteger('cat_serial', true)->primary();
+            $table->char('cat_code', 8);
             $table->string('cat_name', 50);
         });
     }

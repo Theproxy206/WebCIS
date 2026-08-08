@@ -18,6 +18,7 @@ class CategoryFactory extends Factory
     {
         return [
             'cat_name' => fake()->word(),
+            'cat_code' => fake()->toLower(fake()->lexify()),
         ];
     }
 }

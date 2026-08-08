@@ -15,7 +15,8 @@ class Category extends Model
     public $incrementing = true;
     protected $keyType = 'int';
     protected $fillable = [
-        'cat_name'
+        'cat_name',
+        'cat_code',
     ];
     public $timestamps = false;
 
