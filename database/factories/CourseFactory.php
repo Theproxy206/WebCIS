@@ -18,7 +18,7 @@ class CourseFactory extends Factory
             'cou_title' => fake()->sentence(3),
             'cou_short_title' => fake()->words(2, true),
             'cou_description' => fake()->paragraph(),
-            'cou_code' => strtoupper(fake()->bothify('ISC###')),
+            'cou_code' => strtoupper(fake()->unique()->bothify('ISC###')),
             'cou_status' => fake()->randomElement(CourseStatus::cases()),
             'cou_path_icon' => null,
         ];

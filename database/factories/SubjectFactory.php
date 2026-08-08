@@ -1,6 +1,6 @@
 <?php
 
-namespace Database\Factories\Models;
+namespace Database\Factories;
 
 use Illuminate\Database\Eloquent\Factories\Factory;
 
@@ -17,8 +17,8 @@ class SubjectFactory extends Factory
     public function definition(): array
     {
         return [
-            'sub_code' => fake()->bothify('#?#'),
-            'sub_name' => fake()->words(),
+            'sub_code' => strtoupper(fake()->unique()->bothify('#?#')),
+            'sub_name' => fake()->words(3, true),
         ];
     }
 }

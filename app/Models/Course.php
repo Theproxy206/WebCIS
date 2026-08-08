@@ -17,6 +17,7 @@ class Course extends Model
     protected $primaryKey = 'cou_id';
     public $incrementing = false;
     protected $keyType = 'string';
+    public $timestamps = true;
 
     protected $fillable = [
         'cou_id',

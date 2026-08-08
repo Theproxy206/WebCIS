@@ -3,6 +3,7 @@
 use App\Http\Controllers\MaterialController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\UserController;
+use App\Http\Controllers\CourseController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\ProfileController;
 use Illuminate\Http\Request;
@@ -34,6 +35,8 @@ Route::prefix('v1')->group(function () {
     Route::patch('/me', [ProfileController::class, 'update'])->middleware('auth:sanctum');
     Route::put('/me/profile-picture', [ProfileController::class, 'updateProfilePicture'])->middleware('auth:sanctum');
     Route::put('/me/banner', [ProfileController::class, 'updateBanner'])->middleware('auth:sanctum');
+
+    Route::get('/courses', [CourseController::class, 'index'])->middleware('auth:sanctum');
 
     Route::get('/materials', [MaterialController::class, 'index'])->middleware('auth:sanctum');
     Route::get('/materials/{material}', [MaterialController::class, 'show'])->middleware('auth:sanctum');
