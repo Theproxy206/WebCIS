@@ -5,7 +5,6 @@ namespace App\Models;
 use App\Enums\UserType;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Support\Str;
 use Laravel\Sanctum\HasApiTokens;
@@ -58,10 +57,16 @@ class User extends Authenticatable
         return $this->user_pass;
     }
 
-    public function rules() : HasMany
+    public function hasPermission(string $permission): bool
     {
-        return $this->hasMany(Rule::class, 'fk_users', 'user_id')
-        ->with('granted');
+        return $this->permissions()
+            ->where('per_code', $permission)
+            ->exists();
+    }
+
+    public function permissions() : BelongsToMany
+    {
+        return $this->belongsToMany(Permission::class, 'users_permissions', 'fk_users', 'fk_permissions', 'user_id', 'per_id');
     }
 
     public function medals() : BelongsToMany

@@ -2,6 +2,7 @@
 
 namespace Database\Factories;
 
+use App\Models\Permission;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Facades\Hash;
 use App\Enums\UserType;
@@ -11,7 +12,7 @@ use App\Models\Course;
 use App\Models\Lesson;
 
 /**
- * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\User>
+ * @extends Factory<User>
  */
 class UserFactory extends Factory
 {
@@ -27,11 +28,18 @@ class UserFactory extends Factory
             'user_path_profile_picture' => null,
             'user_path_banner' => null,
             'user_pass' => Hash::make('password'),
-            'user_type' => UserType::Student,
+            'user_type' => fake()->randomElement(UserType::cases()),
             'user_name' => fake()->firstName(),
             'user_surname' => fake()->lastName(),
             'user_second_surname' => fake()->lastName(),
         ];
+    }
+
+    public function student(): static
+    {
+        return $this->state(fn () => [
+            'user_type' => UserType::Student,
+        ]);
     }
 
     public function professor(): static
@@ -92,6 +100,29 @@ class UserFactory extends Factory
                     );
                 }
             }
+        });
+    }
+
+    /**
+     * Attach the specified permissions to the user.
+     * 
+     * @param array $permissions Array of the permissions the user will have.
+     * @return UserFactory
+     * @throws \InvalidArgumentException Fails if one or more given permissions don't exist.
+     */
+    public function withPermissions(array $permissions): static
+    {
+        return $this->afterCreating(function (User $user) use ($permissions) {
+            $permissionIds = Permission::whereIn('per_code', $permissions)
+                ->pluck('per_id');
+
+            if ($permissionIds->count() !== count($permissions)) {
+                throw new \InvalidArgumentException(
+                    'One or more permissions do not exist.'
+                );
+            }
+
+            $user->permissions()->attach($permissionIds);
         });
     }
 }

@@ -11,18 +11,20 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('rules', function (Blueprint $table) {
-            $table->id('rule_serial');
-            $table->string('rule_name');
-            $table->timestamps();
+        Schema::create('permissions', function (Blueprint $table) {
+            $table->id('per_id');
+            $table->string('per_code');
+            $table->string('per_name');
+            $table->string('per_description');
+            $table->timestampsTz();
         });
 
-        Schema::create('users_rules', function (Blueprint $table) {
+        Schema::create('users_permissions', function (Blueprint $table) {
             $table->foreignUuid('fk_users')->references('user_id')->on('users');
-            $table->foreignId('fk_rules')->references('rule_serial')->on('rules');
-            $table->boolean('granted')->default(false);
+            $table->foreignId('fk_permissions')->references('per_id')->on('permissions');
+            $table->timestampsTz();
 
-            $table->primary(['fk_users', 'fk_rules']);
+            $table->primary(['fk_users', 'fk_permissions']);
         });
     }
 
@@ -31,7 +33,7 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('rules');
-        Schema::dropIfExists('users_rules');
+        Schema::dropIfExists('permissions');
+        Schema::dropIfExists('users_permissions');
     }
 };
