@@ -70,4 +70,21 @@ class CourseService {
             page: $filters['page'] ?? 1,
         );
     }
+
+    /**
+     * Search for one specific Course using its code
+     * 
+     * @param string $code
+     * @return Course
+     */
+    public function getCourse(string $code): Course
+    {
+        return Course::where('cou_code', $code)->with([
+            'categories',
+            'subjects',
+            'lessons' => function ($query) {
+                $query->orderBy('les_order');
+            },
+        ])->firstOrFail();
+    }
 }

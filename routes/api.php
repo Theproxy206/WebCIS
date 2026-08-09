@@ -37,6 +37,7 @@ Route::prefix('v1')->group(function () {
     Route::put('/me/banner', [ProfileController::class, 'updateBanner'])->middleware('auth:sanctum');
 
     Route::get('/courses', [CourseController::class, 'index'])->middleware('auth:sanctum');
+    Route::get('/courses/{course}', [CourseController::class, 'show'])->middleware('auth:sanctum');
 
     Route::get('/materials', [MaterialController::class, 'index'])->middleware('auth:sanctum');
     Route::get('/materials/{material}', [MaterialController::class, 'show'])->middleware('auth:sanctum');

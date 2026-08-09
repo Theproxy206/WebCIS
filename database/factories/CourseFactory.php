@@ -5,6 +5,7 @@ namespace Database\Factories;
 use App\Enums\CourseStatus;
 use App\Models\Course;
 use App\Models\Category;
+use App\Models\Lesson;
 use App\Models\Subject;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
@@ -57,6 +58,28 @@ class CourseFactory extends Factory
         return $this->state(fn () => [
             'cou_status' => CourseStatus::Archived,
         ]);
+    }
+
+    /**
+     * Creates between 5 and 20 lessons and assign them to the course.
+     * 
+     * @return CourseFactory
+     */
+    public function withLessons(): static
+    {
+        return $this->afterCreating(function (Course $course) {
+            $count = fake()->numberBetween(5, 20);
+
+            Lesson::factory()
+                ->count($count)
+                ->for($course, 'course')
+                ->sequence(
+                    fn ($sequence) => [
+                        'les_order' => $sequence->index + 1,
+                    ]
+                )
+                ->create();
+        });
     }
 
     /**

@@ -10,7 +10,7 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Laravel\Sanctum\Sanctum;
 use Tests\TestCase;
 
-class CoursesTest extends TestCase
+class CourseIndexTest extends TestCase
 {
     use RefreshDatabase;
 

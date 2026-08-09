@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\CourseIndexRequest;
+use App\Http\Resources\CourseResource;
 use App\Http\Resources\CourseSummaryResource;
 use App\Http\Services\CourseService;
 use Illuminate\Http\Request;
@@ -36,9 +37,9 @@ class CourseController extends Controller
     /**
      * Display the specified resource.
      */
-    public function show(string $id)
+    public function show(string $code)
     {
-        //
+        Return new CourseResource($this->courseService->getCourse($code));
     }
 
     /**
