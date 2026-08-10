@@ -4,8 +4,11 @@ namespace App\Http\Services;
 
 use App\Enums\OrderDirection;
 use App\Enums\CourseStatus;
+use App\Models\Category;
 use App\Models\Course;
+use App\Models\Subject;
 use Illuminate\Pagination\LengthAwarePaginator;
+use Illuminate\Support\Facades\DB;
 
 class CourseService {
     public function paginate(array $filters = []): LengthAwarePaginator
@@ -86,5 +89,43 @@ class CourseService {
                 $query->orderBy('les_order');
             },
         ])->firstOrFail();
+    }
+
+    /**
+     * Creates a course
+     * 
+     * @param array $data
+     * @return Course
+     */
+    public function createCourse(array $data): Course
+    {
+        return DB::transaction(function () use ($data) {
+            $course = Course::create([
+                'cou_title' => $data['title'],
+                'cou_short_title' => $data['short_title'],
+                'cou_code' => $data['code'],
+                'cou_description' => $data['description'] ?? null,
+                'cou_path_icon' => $data['icon'] ?? null,
+                'cou_status' => CourseStatus::Draft,
+            ]);
+
+            $categories = Category::whereIn(
+                'cat_code',
+                $data['categories'] ?? []
+            )->pluck('cat_serial');
+
+            $subjects = Subject::whereIn(
+                'sub_code',
+                $data['subjects'] ?? []
+            )->pluck('sub_serial');
+
+            $course->categories()->attach($categories);
+            $course->subjects()->attach($subjects);
+
+            return $course->load([
+                'categories',
+                'subjects',
+            ]);
+        });
     }
 }

@@ -6,6 +6,7 @@ use App\Http\Resources\CategoryResource;
 use App\Http\Resources\SubjectResource;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
+use Illuminate\Support\Facades\Storage;
 
 class CourseResource extends JsonResource
 {
@@ -27,9 +28,7 @@ class CourseResource extends JsonResource
             'subjects' => SubjectResource::collection(
                 $this->whenLoaded('subjects')
             ),
-            'image' => $this->cou_path_image
-                ? asset('storage/' . $this->cou_path_image)
-                : null,
+            'image' => $this->cou_path_image ? Storage::disk('public')->url($this->cou_path_image) : null,
             'lessons' => LessonSummaryResource::collection(
                 $this->whenLoaded('lessons')
             ),

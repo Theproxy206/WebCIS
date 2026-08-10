@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\MaterialController;
+use App\Http\Controllers\UploadsController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\CourseController;
@@ -36,8 +37,10 @@ Route::prefix('v1')->group(function () {
     Route::put('/me/profile-picture', [ProfileController::class, 'updateProfilePicture'])->middleware('auth:sanctum');
     Route::put('/me/banner', [ProfileController::class, 'updateBanner'])->middleware('auth:sanctum');
 
+    Route::post('/courses/icon', [CourseController::class, 'storeIcon'])->middleware('auth:sanctum');
     Route::get('/courses', [CourseController::class, 'index'])->middleware('auth:sanctum');
     Route::get('/courses/{course}', [CourseController::class, 'show'])->middleware('auth:sanctum');
+    Route::post('/courses', [CourseController::class, 'store'])->middleware('auth:sanctum');
 
     Route::get('/materials', [MaterialController::class, 'index'])->middleware('auth:sanctum');
     Route::get('/materials/{material}', [MaterialController::class, 'show'])->middleware('auth:sanctum');
