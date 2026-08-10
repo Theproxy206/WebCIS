@@ -2,13 +2,19 @@
 
 namespace App\Http\Controllers;
 
+use App\Enums\CourseRole;
 use App\Http\Requests\CourseCreateRequest;
 use App\Http\Requests\CourseIndexRequest;
+use App\Http\Requests\CourseReviewActionRequest;
 use App\Http\Requests\ImageUploadRequest;
 use App\Http\Resources\CourseResource;
 use App\Http\Resources\CourseSummaryResource;
 use App\Http\Services\CourseService;
+use App\Http\Services\EmailSenderService;
 use App\Http\Services\StorageService;
+use App\Mail\CourseApprovedEmail;
+use App\Mail\CoursePublishedEmail;
+use App\Mail\CourseRejectedEmail;
 use App\Models\Course;
 use Illuminate\Http\Request;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
@@ -19,7 +25,8 @@ class CourseController extends Controller
 
     public function __construct(
         private readonly CourseService $courseService,
-        private readonly StorageService $storage
+        private readonly StorageService $storage,
+        private readonly EmailSenderService $email
     ) {}
 
     public function storeIcon(ImageUploadRequest $request)
@@ -83,5 +90,88 @@ class CourseController extends Controller
     public function destroy(string $id)
     {
         //
+    }
+
+    public function sendForApproval(string $code)
+    {
+        $course = Course::where('cou_code', $code)->firstOrFail();
+        $this->authorize('sendForApproval', $course);
+
+        return response()->json([
+            'message' => 'Send for approval',
+            'Course' => new CourseSummaryResource($this->courseService->seekApproval($code)),
+        ]);
+    }
+
+    public function approve(CourseReviewActionRequest $request, string $code)
+    {
+        $course = Course::where('cou_code', $code)->firstOrFail();
+        $this->authorize('approve', $course);
+
+        $course = $this->courseService->approve($code);
+
+        $recipients = $course->users()
+            ->wherePivotIn('role', [
+                CourseRole::Owner->value,
+                CourseRole::Collaborator->value,
+                CourseRole::Advisor->value,
+            ])
+            ->pluck('user_email')
+            ->all();
+
+        $this->email->send($recipients, new CourseApprovedEmail($course, $request->validated('commentary')));
+
+        return response()->json([
+            'message' => 'Course approved succesfully',
+            'Course' => new CourseSummaryResource($course),
+        ]);
+    }
+
+    public function reject(CourseReviewActionRequest $request, string $code)
+    {
+        $course = Course::where('cou_code', $code)->firstOrFail();
+        $this->authorize('reject', $course);
+
+        $course = $this->courseService->reject($code);
+
+        $recipients = $course->users()
+            ->wherePivotIn('role', [
+                CourseRole::Owner->value,
+                CourseRole::Collaborator->value,
+                CourseRole::Advisor->value,
+            ])
+            ->pluck('user_email')
+            ->all();
+
+        $this->email->send($recipients, new CourseRejectedEmail($course, $request->validated('commentary')));
+
+        return response()->json([
+            'message' => 'Course rejected',
+            'Course' => new CourseSummaryResource($course),
+        ]);
+    }
+
+    public function publish(string $code)
+    {
+        $course = Course::where('cou_code', $code)->firstOrFail();
+        $this->authorize('publish', $course);
+
+        $course = $this->courseService->publish($code);
+
+        $recipients = $course->users()
+            ->wherePivotIn('role', [
+                CourseRole::Owner->value,
+                CourseRole::Collaborator->value,
+                CourseRole::Advisor->value,
+            ])
+            ->pluck('user_email')
+            ->all();
+
+        $this->email->send($recipients, new CoursePublishedEmail($course));
+
+        return response()->json([
+            'message' => 'Course published succesfully',
+            'course' => new CourseSummaryResource($course),
+        ]);
     }
 }

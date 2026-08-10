@@ -28,6 +28,7 @@ class CourseSummaryResource extends JsonResource
             'subjects' => SubjectResource::collection(
                 $this->whenLoaded('subjects')
             ),
+            'status' => $this->cou_status,
             'icon' => $this->cou_path_icon ? Storage::disk('public')->url($this->cou_path_icon) : null,
         ];
     }

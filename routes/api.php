@@ -41,6 +41,10 @@ Route::prefix('v1')->group(function () {
     Route::get('/courses', [CourseController::class, 'index'])->middleware('auth:sanctum');
     Route::get('/courses/{course}', [CourseController::class, 'show'])->middleware('auth:sanctum');
     Route::post('/courses', [CourseController::class, 'store'])->middleware('auth:sanctum');
+    Route::patch('/courses/{course}/send-for-approval', [CourseController::class, 'sendForApproval'])->middleware('auth:sanctum');
+    Route::patch('/courses/{course}/approve', [CourseController::class, 'approve'])->middleware('auth:sanctum');
+    Route::patch('/courses/{course}/reject', [CourseController::class, 'reject'])->middleware('auth:sanctum');
+    Route::patch('/courses/{course}/publish', [CourseController::class, 'publish'])->middleware('auth:sanctum');
 
     Route::get('/materials', [MaterialController::class, 'index'])->middleware('auth:sanctum');
     Route::get('/materials/{material}', [MaterialController::class, 'show'])->middleware('auth:sanctum');

@@ -2,6 +2,8 @@
 
 namespace App\Policies;
 
+use App\Enums\CourseRole;
+use App\Enums\UserType;
 use App\Models\Course;
 use App\Models\User;
 use Illuminate\Auth\Access\Response;
@@ -67,5 +69,36 @@ class CoursePolicy
     public function storeIcon(User $user): bool
     {
         return $user->hasPermission('create-course');
+    }
+
+    public function sendForApproval(User $user, Course $course): bool
+    {
+        return $user->hasPermission('create-course')
+        && $user->courses()
+        ->where('cou_id', $course->cou_id)
+        ->wherePivot('role', CourseRole::Owner)
+        ->exists();
+    }
+
+    public function approve(User $user): bool
+    {
+        return $user->user_type === UserType::Admin && $user->hasPermission('approve-course');
+    }
+
+    public function reject(User $user): bool
+    {
+        return $user->user_type === UserType::Admin && $user->hasPermission('approve-course');
+    }
+
+    public function publish(User $user, Course $course): bool
+    {
+        return $user->hasPermission('publish-course')
+        && (
+            $user->courses()
+                ->where('cou_id', $course->cou_id)
+                ->wherePivot('role', CourseRole::Owner)
+                ->exists()
+            || $user->user_type === UserType::Admin
+        );
     }
 }
