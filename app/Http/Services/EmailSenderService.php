@@ -7,18 +7,19 @@ use Illuminate\Mail\Mailable;
 use Illuminate\Support\Facades\Mail;
 use RuntimeException;
 
-class EmailSenderService {
+class EmailSenderService
+{
     /**
-     * Sends an email
+     * Sends an email to one or multiple recipients.
      *
-     * @param string $email destination email
-     * @param Mailable $mail mail to be sent
-     * @throws EmailSenderException if it fails to send the email
+     * @param string|array<string> $emails
+     * @param Mailable $mail
+     * @throws EmailSenderException
      */
-    public function send(string $email, Mailable $mail) : void
+    public function send(string|array $emails, Mailable $mail): void
     {
         try {
-            Mail::to($email)->queue($mail);
+            Mail::to($emails)->queue($mail);
         } catch (\Throwable $e) {
             report($e);
 
