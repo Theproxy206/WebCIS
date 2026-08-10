@@ -2,8 +2,10 @@
 
 namespace Tests\Feature\Courses;
 
+use App\Enums\CourseRole;
 use App\Enums\CourseStatus;
 use App\Models\Category;
+use App\Models\Course;
 use App\Models\Subject;
 use App\Models\User;
 use Illuminate\Http\UploadedFile;
@@ -124,6 +126,17 @@ class CourseCreationTest extends TestCase
                 'cou_description' => $data['description'],
                 'cou_status' => CourseStatus::Draft,
                 'cou_path_icon' => $data['icon'],
+            ]
+        );
+
+        $course = Course::where('cou_code', $data['code'])->firstOrFail();
+
+        $this->assertDatabaseHas(
+            'courses_users',
+            [
+                'fk_courses' => $course->cou_id,
+                'fk_users' => $user->user_id,
+                'role' => CourseRole::Owner,
             ]
         );
     }

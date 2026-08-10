@@ -2,12 +2,15 @@
 
 namespace App\Http\Services;
 
+use App\Enums\CourseRole;
 use App\Enums\OrderDirection;
 use App\Enums\CourseStatus;
 use App\Models\Category;
 use App\Models\Course;
 use App\Models\Subject;
+use App\Models\User;
 use Illuminate\Pagination\LengthAwarePaginator;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 
 class CourseService {
@@ -97,9 +100,9 @@ class CourseService {
      * @param array $data
      * @return Course
      */
-    public function createCourse(array $data): Course
+    public function createCourse(User $user, array $data): Course
     {
-        return DB::transaction(function () use ($data) {
+        return DB::transaction(function () use ($user, $data) {
             $course = Course::create([
                 'cou_title' => $data['title'],
                 'cou_short_title' => $data['short_title'],
@@ -121,6 +124,14 @@ class CourseService {
 
             $course->categories()->attach($categories);
             $course->subjects()->attach($subjects);
+
+            $user->courses()->attach(
+                $course,
+                [
+                    'role' => CourseRole::Owner,
+                    'created_at' => Carbon::now(),
+                ]
+            );
 
             return $course->load([
                 'categories',

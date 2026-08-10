@@ -57,7 +57,7 @@ class CourseController extends Controller
         $this->authorize('create', Course::class);
         
         return response()->json([
-            'course' => new CourseSummaryResource($this->courseService->createCourse($request->validated())),
+            'course' => new CourseSummaryResource($this->courseService->createCourse($request->user(), $request->validated())),
         ], 201);
     }
 
