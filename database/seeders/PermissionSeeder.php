@@ -22,7 +22,17 @@ class PermissionSeeder extends Seeder
                 'code' => 'upload-material',
                 'name' => 'Subir Material',
                 'description' => 'El usuario puede subir archivos en la sección de materiales',
-            ]
+            ],
+            [
+                'code' => 'publish-course',
+                'name' => 'Publicar Curso',
+                'description' => 'Permiso para publicar cursos aprovados',
+            ],
+            [
+                'code' => 'approve-course',
+                'name' => 'Aprovar Curso',
+                'description' => 'Permiso para aprovar cursos en revisión',
+            ],
         ];
 
         foreach ($permissions as $data){
