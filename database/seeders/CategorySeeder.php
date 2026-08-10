@@ -13,18 +13,36 @@ class CategorySeeder extends Seeder
     public function run(): void
     {
         $categories = [
-            'Frameworks',
-            'Web',
-            'Herramientas',
-            'Compiladores',
-            'Servidores',
-            'Redes'
+            [
+                'name' => 'Frameworks',
+                'code' => 'frame',
+            ],
+            [
+                'name' => 'Web',
+                'code' => 'web',
+            ],
+            [
+                'name' => 'Herramientas',
+                'code' => 'tools',
+            ],
+            [
+                'name' => 'Compiladores',
+                'code' => 'compiler',
+            ],
+            [
+                'name' => 'Servidores',
+                'code' => 'servers',
+            ],
+            [
+                'name' => 'Redes',
+                'code' => 'redes',
+            ]
         ];
 
-        foreach ($categories as $category) {
+        foreach ($categories as $data) {
             Category::create([
-                'cat_name' => $category,
-                'cat_code' => 'test',
+                'cat_name' => $data['name'],
+                'cat_code' => $data['code'],
             ]);
         }
     }
