@@ -6,6 +6,7 @@ use App\Enums\CourseRole;
 use App\Http\Requests\CourseCreateRequest;
 use App\Http\Requests\CourseIndexRequest;
 use App\Http\Requests\CourseReviewActionRequest;
+use App\Http\Requests\CourseUpdateRequest;
 use App\Http\Requests\ImageUploadRequest;
 use App\Http\Resources\CourseResource;
 use App\Http\Resources\CourseSummaryResource;
@@ -79,7 +80,7 @@ class CourseController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, string $code)
+    public function update(CourseUpdateRequest $request, string $code)
     {
         $course = Course::where('cou_code', $code)->firstOrFail();
         $this->authorize('update', $course);

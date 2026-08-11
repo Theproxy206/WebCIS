@@ -296,6 +296,9 @@ class CourseService {
             $this->store->delete($oldIcon);
         }
 
-        return $course;
+        return $course->load([
+            'categories',
+            'subjects'
+        ]);
     }
 }
