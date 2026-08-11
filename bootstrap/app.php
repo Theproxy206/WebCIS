@@ -5,6 +5,7 @@ use App\Exceptions\Auth\TokenGenerationException;
 use App\Exceptions\Auth\TokenStorageException;
 use App\Exceptions\Auth\TokenValidationException;
 use App\Exceptions\Auth\UserStorageException;
+use App\Exceptions\Courses\CourseUpdateError;
 use App\Exceptions\Courses\InvalidCourseStatusTransition;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
@@ -62,5 +63,11 @@ return Application::configure(basePath: dirname(__DIR__))
             return response()->json([
                 'message' => $e->getMessage(),
             ], 422);
+        });
+
+        $exceptions->render(function (CourseUpdateError $e) {
+            return response()->json([
+                'message' => $e->getMessage(),
+            ], 500);
         });
     })->create();

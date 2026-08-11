@@ -40,7 +40,7 @@ class CourseController extends Controller
 
         return response()->json([
             'path' => $path,
-            'url' => asset('storage/' . $path),
+            'url' => $this->storage->url($path),
         ], 201);
     }
 
@@ -79,9 +79,17 @@ class CourseController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, string $id)
+    public function update(Request $request, string $code)
     {
-        //
+        $course = Course::where('cou_code', $code)->firstOrFail();
+        $this->authorize('update', $course);
+
+        $course = $this->courseService->updateCourse($request->validated(), $code);
+
+        return response()->json([
+            'message' => 'Course updated succesfully',
+            'course' => new CourseSummaryResource($course),
+        ]);
     }
 
     /**

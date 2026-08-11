@@ -5,6 +5,7 @@ namespace App\Http\Services;
 use App\Enums\CourseRole;
 use App\Enums\OrderDirection;
 use App\Enums\CourseStatus;
+use App\Exceptions\Courses\CourseUpdateError;
 use App\Exceptions\Courses\InvalidCourseStatusTransition;
 use App\Models\Category;
 use App\Models\Course;
@@ -16,6 +17,10 @@ use Illuminate\Support\Facades\DB;
 use function PHPUnit\Framework\throwException;
 
 class CourseService {
+    public function __construct(
+        private readonly StorageService $store
+    ) {}
+
     public function paginate(array $filters = []): LengthAwarePaginator
     {
         $query = Course::query()->where('cou_status', CourseStatus::Published)->with([
@@ -234,5 +239,63 @@ class CourseService {
         $course->save();
 
         return $course->refresh();
+    }
+
+    public function updateCourse(array $data, string $code): Course
+    {
+        $oldIcon = null;
+        $newIcon = null;
+
+        try {
+            $course = DB::transaction(function () use ($data, $code, &$oldIcon, &$newIcon) {
+                $course = Course::where('cou_code', $code)->firstOrFail();
+                $oldIcon = $course->cou_path_icon;
+                $newIcon = $data['icon'] ?? null;
+                
+                if (array_key_exists('icon', $data)) {
+                    $course->cou_path_icon = $data['icon'];
+                }
+
+                $course->cou_code = $data['code'] ?? $course->cou_code;
+                $course->cou_title = $data['title'] ?? $course->cou_title;
+                $course->cou_short_title = $data['short_title'] ?? $course->cou_short_title;
+                if (array_key_exists('description', $data)) {
+                    $course->cou_description = $data['description'];
+                }
+                $course->save();
+
+                if (array_key_exists('categories', $data)) {
+                    $categories = Category::whereIn(
+                        'cat_code',
+                        $data['categories']
+                    )->pluck('cat_serial');
+
+                    $course->categories()->sync($categories);
+                }
+
+                if (array_key_exists('subjects', $data)) {
+                    $subjects = Subject::whereIn(
+                        'sub_code',
+                        $data['subjects']
+                    )->pluck('sub_serial');
+
+                    $course->subjects()->sync($subjects);
+                }
+
+                return $course->refresh();
+            });
+        } catch (\Throwable $e) {
+            if ($newIcon !== null && $newIcon !== $oldIcon) {
+                $this->store->delete($newIcon);
+            }
+
+            throw new CourseUpdateError(previous: $e);
+        }
+        
+        if ($oldIcon !== null && $oldIcon !== $newIcon) {
+            $this->store->delete($oldIcon);
+        }
+
+        return $course;
     }
 }

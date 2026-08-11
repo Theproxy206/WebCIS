@@ -39,7 +39,11 @@ class CoursePolicy
      */
     public function update(User $user, Course $course): bool
     {
-        return false;
+        return $user->hasPermission('create-course')
+            && $user->courses()
+            ->where('cou_id', $course->cou_id)
+            ->wherePivot('role', CourseRole::Owner)
+            ->exists();
     }
 
     /**
