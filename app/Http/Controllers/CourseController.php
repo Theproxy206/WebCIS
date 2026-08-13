@@ -17,8 +17,8 @@ use App\Mail\CourseApprovedEmail;
 use App\Mail\CoursePublishedEmail;
 use App\Mail\CourseRejectedEmail;
 use App\Models\Course;
-use Illuminate\Http\Request;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
+use Illuminate\Http\JsonResponse;
 
 class CourseController extends Controller
 {
@@ -95,10 +95,18 @@ class CourseController extends Controller
 
     /**
      * Remove the specified resource from storage.
+     * 
+     * @param string $code
+     * @return JsonResponse
      */
-    public function destroy(string $id)
+    public function destroy(string $code): JsonResponse
     {
-        //
+        $course = Course::where('cou_code', $code)->firstOrFail();
+        $this->authorize('destroy', $course);
+
+        $this->courseService->delete($code);
+
+        return response()->json(status:204);
     }
 
     public function sendForApproval(string $code)

@@ -301,4 +301,21 @@ class CourseService {
             'subjects'
         ]);
     }
+
+    public function delete(string $code)
+    {
+        $icon = null;
+
+        DB::transaction(function () use ($code, &$icon) {
+            $course = Course::where('cou_code', $code)->firstOrFail();
+
+            $icon = $course->cou_path_icon;
+
+            $course->delete();
+        });
+
+        if ($icon !== null) {
+            $this->store->delete($icon);
+        }
+    }
 }

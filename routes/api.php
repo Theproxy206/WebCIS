@@ -46,6 +46,7 @@ Route::prefix('v1')->group(function () {
     Route::patch('/courses/{course}/reject', [CourseController::class, 'reject'])->middleware('auth:sanctum');
     Route::patch('/courses/{course}/publish', [CourseController::class, 'publish'])->middleware('auth:sanctum');
     Route::patch('/courses/{course}', [CourseController::class, 'update'])->middleware('auth:sanctum');
+    Route::delete('/courses/{course}', [CourseController::class, 'destroy'])->middleware('auth:sanctum');
 
     Route::get('/materials', [MaterialController::class, 'index'])->middleware('auth:sanctum');
     Route::get('/materials/{material}', [MaterialController::class, 'show'])->middleware('auth:sanctum');

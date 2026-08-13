@@ -30,8 +30,8 @@ return new class extends Migration
             $table->json('les_content')->nullable();
             $table->timestampsTz();
             $table->unsignedInteger('fk_lessons_lessons')->nullable();
-            $table->foreignUlid('fk_lessons_courses')->references('cou_id')->on('courses');
-            $table->foreign('fk_lessons_lessons')->references('les_serial')->on('lessons');
+            $table->foreignUlid('fk_lessons_courses')->references('cou_id')->on('courses')->cascadeOnDelete();
+            $table->foreign('fk_lessons_lessons')->references('les_serial')->on('lessons')->nullOnDelete();
         });
     }
 

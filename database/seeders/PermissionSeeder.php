@@ -33,6 +33,11 @@ class PermissionSeeder extends Seeder
                 'name' => 'Aprovar Curso',
                 'description' => 'Permiso para aprovar cursos en revisión',
             ],
+            [
+                'code' => 'delete-course',
+                'name' => 'Eliminar Curso',
+                'description' => 'Elimina permanentemente el curso',
+            ]
         ];
 
         foreach ($permissions as $data){
