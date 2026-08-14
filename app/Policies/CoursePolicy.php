@@ -125,4 +125,13 @@ class CoursePolicy
             || $user->user_type === UserType::Admin
         );
     }
+
+    public function updateIcon(User $user, Course $course): bool
+    {
+        return $user->hasPermission('create-course')
+            && $user->courses()
+            ->where('cou_id', $course->cou_id)
+            ->wherePivot('role', CourseRole::Owner)
+            ->exists();
+    }
 }

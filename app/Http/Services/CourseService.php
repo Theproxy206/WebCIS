@@ -302,6 +302,48 @@ class CourseService {
         ]);
     }
 
+    /**
+     * Updates Course Icon
+     * 
+     * @param string $icon Path of the new icon
+     * @param string $code Code of the course
+     * @throws CourseUpdateError If database course update transaction fails
+     * @return Course Updated course
+     */
+    public function updateIcon(string $icon, string $code): Course
+    {
+        $oldIcon = null;
+        $newIcon = null;
+
+        try {
+            $course = DB::transaction(function () use ($icon, $code, &$oldIcon, &$newIcon) {
+                $course = Course::where('cou_code', $code)->firstOrFail();
+                $oldIcon = $course->cou_path_icon;
+                $newIcon = $icon ?? null;
+
+                $course->cou_path_icon = $newIcon;
+                $course->save();
+
+                return $course->refresh();
+            });
+        } catch (\Throwable $e) {
+            if ($newIcon !== null && $newIcon !== $oldIcon) {
+                $this->store->delete($newIcon);
+            }
+
+            throw new CourseUpdateError('An error ocurred during icon update. Upload the new icon again.', $e);
+        }
+        
+        if ($oldIcon !== null && $oldIcon !== $newIcon) {
+            $this->store->delete($oldIcon);
+        }
+
+        return $course->load([
+            'categories',
+            'subjects'
+        ]);
+    }
+
     public function delete(string $code)
     {
         $icon = null;

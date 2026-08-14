@@ -210,4 +210,79 @@ class CourseUpdateTest extends TestCase
 
         $response->assertForbidden();
     }
+
+    public function test_authorized_user_can_update_course_icon(): void
+    {
+        $user = User::factory()->student()->withPermissions(['create-course'])->create();
+
+        Sanctum::actingAs($user);
+
+        $course = Course::factory()->draft()->withLessons()->withCategories()->withSubjects()->create();
+
+        $course->users()->attach(
+            $user,
+            [
+                'role' => CourseRole::Owner,
+                'created_at' => Carbon::now(),
+            ]
+        );
+
+        Storage::fake('public');
+
+        $file = UploadedFile::fake()->image(
+            'icon.png',
+            512,
+            512
+        );
+
+        $response = $this->postJson('/api/v1/courses/icon', [
+            'image' => $file,
+        ]);
+
+        $path = $response->json('path');
+
+        $data = [
+            'icon' => $path
+        ];
+
+        $response = $this->patchJson("/api/v1/courses/$course->cou_code/icon", $data);
+
+        $response->assertOk()
+        ->assertJsonStructure([
+            'message',
+            'course' => [
+                'code',
+                'title',
+                'short_title',
+                'description',
+                'categories' => [
+                    '*' => [
+                        'code',
+                        'name'
+                    ]
+                ],
+                'subjects' => [
+                    '*' => [
+                        'code',
+                        'name'
+                    ]
+                ],
+                'status',
+                'icon'
+            ],
+        ]);
+
+        $this->assertDatabaseHas(
+            'courses',
+            [
+                'cou_id' => $course->cou_id,
+                'cou_code' => $course->cou_code,
+                'cou_title' => $course->cou_title,
+                'cou_short_title' => $course->cou_short_title,
+                'cou_description' => $course->cou_description,
+                'cou_status' => CourseStatus::Draft,
+                'cou_path_icon' => $data['icon'],
+            ]
+        );
+    }
 }

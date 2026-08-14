@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Enums\CourseRole;
 use App\Http\Requests\CourseCreateRequest;
+use App\Http\Requests\CourseIconUpdateRequest;
 use App\Http\Requests\CourseIndexRequest;
 use App\Http\Requests\CourseReviewActionRequest;
 use App\Http\Requests\CourseUpdateRequest;
@@ -188,6 +189,19 @@ class CourseController extends Controller
 
         return response()->json([
             'message' => 'Course published succesfully',
+            'course' => new CourseSummaryResource($course),
+        ]);
+    }
+
+    public function updateIcon(CourseIconUpdateRequest $request, string $code): JsonResponse
+    {
+        $course = Course::where('cou_code', $code)->firstOrFail();
+        $this->authorize('updateIcon', $course);
+
+        $course = $this->courseService->updateIcon($request->validated('icon'), $code);
+
+        return response()->json([
+            'message' => 'Updated course icon',
             'course' => new CourseSummaryResource($course),
         ]);
     }
