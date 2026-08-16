@@ -117,7 +117,7 @@ class CourseController extends Controller
 
         return response()->json([
             'message' => 'Send for approval',
-            'Course' => new CourseSummaryResource($this->courseService->seekApproval($code)),
+            'course' => new CourseSummaryResource($this->courseService->seekApproval($code)),
         ]);
     }
 
