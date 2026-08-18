@@ -6,6 +6,7 @@ use App\Enums\EnrollmentStatus;
 use App\Enums\UserType;
 use App\Enums\CourseRole;
 use App\Models\User;
+use App\Models\Course;
 use Illuminate\Database\Seeder;
 
 class EnrollmentSeeder extends Seeder
@@ -18,6 +19,8 @@ class EnrollmentSeeder extends Seeder
         $student = User::where('user_type', UserType::Student)->firstOrFail();
         $professor = User::where('user_type', UserType::Professor)->firstOrFail();
         $extern = User::where('user_type', UserType::Extern)->firstOrFail();
+        $courseLaravel = Course::where('cou_code', 'LARAVEL-101')->firstOrFail();
+        $courseGit = Course::where('cou_code', 'GIT-101')->firstOrFail();
 
         /*
         |--------------------------------------------------------------------------
@@ -26,7 +29,7 @@ class EnrollmentSeeder extends Seeder
         */
 
         $student->courses()->attach(
-            '000000000001',
+            $courseLaravel->cou_id,
             [
                 'status' => EnrollmentStatus::InProgress,
                 'role' => null,
@@ -38,7 +41,7 @@ class EnrollmentSeeder extends Seeder
         );
 
         $student->courses()->attach(
-            '000000000002',
+            $courseGit->cou_id,
             [
                 'status' => EnrollmentStatus::Completed,
                 'role' => null,
@@ -56,7 +59,7 @@ class EnrollmentSeeder extends Seeder
         */
 
         $professor->courses()->attach(
-            '000000000001',
+            $courseLaravel->cou_id,
             [
                 'status' => null,
                 'role' => CourseRole::Owner,
@@ -68,7 +71,7 @@ class EnrollmentSeeder extends Seeder
         );
 
         $professor->courses()->attach(
-            '000000000002',
+            $courseGit->cou_id,
             [
                 'status' => null,
                 'role' => CourseRole::Owner,
@@ -84,7 +87,7 @@ class EnrollmentSeeder extends Seeder
          */
 
         $extern->courses()->attach(
-            '000000000002',
+            $courseGit->cou_id,
             [
                 'status' => EnrollmentStatus::InProgress,
                 'role' => CourseRole::Collaborator,

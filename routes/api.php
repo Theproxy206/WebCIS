@@ -1,8 +1,10 @@
 <?php
 
 use App\Http\Controllers\MaterialController;
+use App\Http\Controllers\UploadsController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\UserController;
+use App\Http\Controllers\CourseController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\ProfileController;
 use Illuminate\Http\Request;
@@ -32,8 +34,20 @@ Route::prefix('v1')->group(function () {
     
     Route::get('/me', [UserController::class, 'me'])->middleware('auth:sanctum');
     Route::patch('/me', [ProfileController::class, 'update'])->middleware('auth:sanctum');
-    Route::put('/me/profile-picture', [ProfileController::class, 'updateProfilePicture'])->middleware('auth:sanctum');
-    Route::put('/me/banner', [ProfileController::class, 'updateBanner'])->middleware('auth:sanctum');
+    Route::patch('/me/profile-picture', [ProfileController::class, 'updateProfilePicture'])->middleware('auth:sanctum');
+    Route::patch('/me/banner', [ProfileController::class, 'updateBanner'])->middleware('auth:sanctum');
+
+    Route::post('/courses/icon', [CourseController::class, 'storeIcon'])->middleware('auth:sanctum');
+    Route::get('/courses', [CourseController::class, 'index'])->middleware('auth:sanctum');
+    Route::get('/courses/{course}', [CourseController::class, 'show'])->middleware('auth:sanctum');
+    Route::post('/courses', [CourseController::class, 'store'])->middleware('auth:sanctum');
+    Route::patch('/courses/{course}/send-for-approval', [CourseController::class, 'sendForApproval'])->middleware('auth:sanctum');
+    Route::patch('/courses/{course}/approve', [CourseController::class, 'approve'])->middleware('auth:sanctum');
+    Route::patch('/courses/{course}/reject', [CourseController::class, 'reject'])->middleware('auth:sanctum');
+    Route::patch('/courses/{course}/publish', [CourseController::class, 'publish'])->middleware('auth:sanctum');
+    Route::patch('/courses/{course}', [CourseController::class, 'update'])->middleware('auth:sanctum');
+    Route::patch('/courses/{course}/icon', [CourseController::class, 'updateIcon'])->middleware('auth:sanctum');
+    Route::delete('/courses/{course}', [CourseController::class, 'destroy'])->middleware('auth:sanctum');
 
     Route::get('/materials', [MaterialController::class, 'index'])->middleware('auth:sanctum');
     Route::get('/materials/{material}', [MaterialController::class, 'show'])->middleware('auth:sanctum');

@@ -24,7 +24,7 @@ return new class extends Migration
 
         Schema::create('courses_users', function (Blueprint $table) {
             $table->foreignUuid('fk_users')->references('user_id')->on('users');
-            $table->string('fk_courses', 12);
+            $table->foreignUlid('fk_courses')->references('cou_id')->on('courses')->cascadeOnDelete();
 
             $table->unsignedTinyInteger('role')->nullable();
             $table->unsignedTinyInteger('status')->nullable();
@@ -34,8 +34,6 @@ return new class extends Migration
             $table->timestampTz('last_accessed_at')->nullable();
 
             $table->primary(['fk_courses', 'fk_users']);
-
-            $table->foreign('fk_courses')->references('cou_token')->on('courses');
         });
 
         Schema::create('users_lessons', function (Blueprint $table) {
@@ -51,22 +49,20 @@ return new class extends Migration
 
         Schema::create('subjects_courses', function (Blueprint $table) {
             $table->unsignedInteger('fk_subjects');
-            $table->string('fk_courses', 12);
+            $table->foreignUlid('fk_courses')->references('cou_id')->on('courses')->cascadeOnDelete();
 
             $table->primary(['fk_subjects', 'fk_courses']);
 
-            $table->foreign('fk_courses')->references('cou_token')->on('courses');
             $table->foreign('fk_subjects')->references('sub_serial')->on('subjects');
         });
 
         Schema::create('categories_courses', function (Blueprint $table) {
             $table->unsignedInteger('fk_categories');
-            $table->string('fk_courses', 12);
+            $table->foreignUlid('fk_courses')->references('cou_id')->on('courses')->cascadeOnDelete();
 
             $table->primary(['fk_categories', 'fk_courses']);
 
             $table->foreign('fk_categories')->references('cat_serial')->on('categories');
-            $table->foreign('fk_courses')->references('cou_token')->on('courses');
         });
 
         Schema::create('subjects_materials', function (Blueprint $table) {

@@ -13,12 +13,13 @@ return new class extends Migration
     {
         Schema::create('subjects', function (Blueprint $table) {
             $table->unsignedInteger('sub_serial', true)->primary();
-            $table->char('sub_code', 8);
+            $table->char('sub_code', 8)->unique();
             $table->string('sub_name', 100);
         });
 
         Schema::create('categories', function (Blueprint $table) {
             $table->unsignedInteger('cat_serial', true)->primary();
+            $table->char('cat_code', 8)->unique();
             $table->string('cat_name', 50);
         });
     }

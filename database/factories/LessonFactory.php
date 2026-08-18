@@ -15,6 +15,7 @@ class LessonFactory extends Factory
         return [
             'les_title' => fake()->sentence(4),
             'les_short_title' => fake()->words(2, true),
+            'les_order' => fake()->numberBetween(0, 9),
             'fk_lessons_courses' => Course::factory(),
             'fk_lessons_lessons' => null,
         ];

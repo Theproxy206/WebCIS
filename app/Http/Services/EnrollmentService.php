@@ -69,7 +69,7 @@ class EnrollmentService {
     {
         $courseTokens = $this
         ->activeCourses($user)
-        ->pluck('cou_token');
+        ->pluck('cou_id');
 
         $completedLessons = $this
         ->completedLessons($user, $courseTokens)

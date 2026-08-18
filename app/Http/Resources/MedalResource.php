@@ -4,6 +4,7 @@ namespace App\Http\Resources;
 
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
+use Illuminate\Support\Facades\Storage;
 
 class MedalResource extends JsonResource
 {
@@ -18,7 +19,7 @@ class MedalResource extends JsonResource
             'name' => $this->med_name,
             'description' => $this->med_description,
             'obtained_at' => $this->pivot->obtained_at,
-            'image' => $this->med_path_image,
+            'image' => $this->med_path_image ? Storage::disk('public')->url($this->med_path_image) : null,
         ];
     }
 }
