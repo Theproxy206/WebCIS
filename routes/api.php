@@ -34,8 +34,8 @@ Route::prefix('v1')->group(function () {
     
     Route::get('/me', [UserController::class, 'me'])->middleware('auth:sanctum');
     Route::patch('/me', [ProfileController::class, 'update'])->middleware('auth:sanctum');
-    Route::put('/me/profile-picture', [ProfileController::class, 'updateProfilePicture'])->middleware('auth:sanctum');
-    Route::put('/me/banner', [ProfileController::class, 'updateBanner'])->middleware('auth:sanctum');
+    Route::patch('/me/profile-picture', [ProfileController::class, 'updateProfilePicture'])->middleware('auth:sanctum');
+    Route::patch('/me/banner', [ProfileController::class, 'updateBanner'])->middleware('auth:sanctum');
 
     Route::post('/courses/icon', [CourseController::class, 'storeIcon'])->middleware('auth:sanctum');
     Route::get('/courses', [CourseController::class, 'index'])->middleware('auth:sanctum');

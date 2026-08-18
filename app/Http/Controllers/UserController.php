@@ -114,7 +114,7 @@ class UserController extends Controller
 
         return response()->json([
             'message' => 'User created successfully',
-            'user' => $newUser,
+            'user' => new UserResource($newUser),
         ], 201);
     }
 

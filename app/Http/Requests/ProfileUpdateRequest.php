@@ -38,7 +38,6 @@ class ProfileUpdateRequest extends FormRequest
 
             'surname' => [
                 'sometimes',
-                'nullable',
                 'string',
                 'max:40',
             ],

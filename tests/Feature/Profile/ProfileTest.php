@@ -80,7 +80,7 @@ class ProfileTest extends TestCase
             512
         );
 
-        $response = $this->putJson('/api/v1/me/profile-picture', [
+        $response = $this->patchJson('/api/v1/me/profile-picture', [
             'image' => $file,
         ]);
 
@@ -110,7 +110,7 @@ class ProfileTest extends TestCase
             300
         );
 
-        $response = $this->putJson('/api/v1/me/banner', [
+        $response = $this->patchJson('/api/v1/me/banner', [
             'image' => $file,
         ]);
 
