@@ -1,0 +1,1552 @@
+openapi: 3.0.3
+
+info:
+  title: WebCIS API
+  description: API REST de la plataforma WebCIS.
+  version: 1.0.0
+
+servers:
+  - url: http://localhost:81/api/v1
+    description: local
+
+tags:
+  - name: Authentication
+    description: User authentication and session management
+  
+  - name: Password Recovery
+    description: Password recovery workflow
+  
+  - name: Email
+    description: Email verification
+
+  - name: Users
+    description: Authenticated user operations
+  
+  - name: Courses
+    description: Course management and publication workflow
+  
+  - name: Uploads
+    description: File and image uploads
+
+paths:
+  /sanctum/csrf-cookie:
+    get:
+      servers:
+        - url: http://localhost:81
+      tags:
+        - Authentication
+      summary: Obtain CSRF protection cookie
+      description: |
+        Initializes Laravel Sanctum's CSRF protection for the SPA.
+
+        The response sets the XSRF-TOKEN cookie. This endpoint does not
+        authenticate the user.
+
+      responses:
+        '204':
+          description: CSRF cookie initialized
+          headers:
+            Set-Cookie:
+              schema:
+                type: string
+                example: |
+                  XSRF-TOKEN=token; 
+                  expires=Fri, 31 Jul 2026 00:59:01 GMT; 
+                  Max-Age=7200; 
+                  path=/; 
+                  domain=localhost; 
+                  samesite=lax
+                  webcis-api-session=token; 
+                  expires=Fri, 31 Jul 2026 00:59:01 GMT; 
+                  Max-Age=7200; 
+                  path=/; 
+                  domain=localhost; 
+                  httponly; 
+                  samesite=lax
+  
+  /auth/login:
+    post:
+      tags:
+        - Authentication
+      summary: Login the user
+      description: Authenticates the user and establishes the session
+
+      responses:
+        '200':
+          description: Logged in successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Successful login
+        
+        '401':
+          description: Failed to authenticate
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Invalid credentials
+  
+  /auth/logout:
+    post:
+      tags:
+        - Authentication
+      summary: Logout
+      description: Closes the user session
+
+      responses:
+        '200':
+          description: Logged out successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: User logged out successfully
+  
+  /auth/register:
+    post:
+      tags:
+        - Authentication
+      summary: Register a new user
+      description: Creates a new user in the database
+
+      responses:
+        '201':
+          description: User created
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: User created successfully
+                  user:
+                    $ref: "#/components/schemas/User"
+        '401':
+          description: Failed to verify register token
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Expired or invalid token
+        '500':
+          description: Failed to store user
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Failed to create new user
+  
+  /forgot-password:
+    post:
+      tags:
+        - Password Recovery
+      summary: Sends secure code
+      description: >
+        First phase. Generates and sends a numeric code to the given email
+      operationId: forgotPassword
+
+      responses:
+        '202':
+          description: Email send
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: If the email exists, a verification email will be sent
+        
+        '500':
+          description: Failed to generate or store the numeric code
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: Failed to generate secure token
+        
+        '503':
+          description: Failed to send the email
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: An error occurred while sending reset link
+      
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - email
+              properties:
+                email:
+                  type: string
+                  example: example@email.com
+  
+  /validate-reset-token:
+    post:
+      tags:
+        - Password Recovery
+      summary: Verifies code
+      description: >
+        Second phase. Verifies the numeric code and returns one token
+      operationId: validateResetToken
+
+      responses:
+        '200':
+          description: Code verified
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Token validated successfully. You may now set a new password.
+                  token:
+                    type: string
+                    example: 32CH4R4CT3R553CUR3T0K3N
+        
+        '403':
+          description: Invalid or expired numeric code
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: The security code is invalid or expired
+        
+        '500':
+          description: Failed to generate or store the token
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Failed to generate secure token
+      
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - email
+                - code
+              properties:
+                email:
+                  type: string
+                  example: example@email.com
+                code:
+                  type: string
+                  example: 1234
+  
+  /reset-password:
+    post:
+      tags:
+        - Password Recovery
+      summary: Resets password
+      description: >
+        Third phase. Verifies token and changes password.
+      operationId: resetPassword
+
+      responses:
+        '200':
+          description: Password reset
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Password updated successfully
+        
+        '401':
+          description: Expired or invalid token
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Expired or invalid token
+        
+        '500':
+          description: Failed to update password
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                    example: No se pudo actualizar la contraseña. Contacta a soporte.
+      
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - email
+                - password
+                - token
+              properties:
+                email:
+                  type: string
+                  example: example@email.com
+                password:
+                  type: string
+                  minLength: 8
+                  example: securepassword
+                token:
+                  type: string
+                  example: 32CH4R4CT3R553CUR3T0K3N
+  
+  /email/verification:
+    post:
+      tags:
+        - Email
+      summary: Sends verification email
+      description: >
+        Initializes the process of email verification, sending an email with a code to the given email.
+        Creates a temporal user.
+      operationId: sendVerificationEmail
+      
+      responses:
+        '202':
+          description: Verification email sent
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: If the email exists, a verification email will be sent
+                    
+        '500':
+          description: Failed to generate, store or send token
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Failed to generate secure token
+
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - email
+              properties:
+                email:
+                  type: string
+                  example: example@email.com
+
+  /email/verification/confirm:
+    post:
+      tags:
+        - Email
+      summary: Confirms user email
+      description: Verifies the user email.
+      operationId: verifyEmail
+
+      responses:
+        '201':
+          description: Email verified
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Verification successful
+                  token:
+                    type: string
+                    example: 32CH4R4CT3R553CUR3T0K3N
+
+        '401':
+          description: Invalid token
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Expired or invalid token
+
+        '500':
+          description: Failed to generate or store token
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Failed to generate secure token
+        
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - email
+                - token
+              properties:
+                email:
+                  type: string
+                  example: example@email.com
+                token:
+                  type: string
+                  example: 32CH4R4CT3R553CUR3T0K3N
+  
+  /me:
+    get:
+      tags:
+        - Users
+      summary: Get user information
+      description: Returns authenticated user information
+      operationId: me
+      security:
+        - sanctum: []
+      
+      responses:
+        '200':
+          description: User returned
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+    
+    patch:
+      tags:
+        - Users
+      summary: Updates user info
+      description: Updates authenticated user given data
+      operationId: updateUser
+      security:
+        - sanctum: []
+      
+      responses:
+        '200':
+          description: User info updated
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Profile updated successfully.
+                  user:
+                    $ref: '#/components/schemas/User'
+      
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                username:
+                  type: string
+                  maxLength: 40
+                  example: JohnDoe2026
+                description:
+                  type: string
+                  nullable: true
+                  maxLength: 300
+                  example: Atque ut minus voluptatem sint saepe similique magnam maxime.
+                name:
+                  type: string
+                  maxLength: 50
+                  example: John
+                surname:
+                  type: string
+                  maxLength: 40
+                  example: Doe
+                second_surname:
+                  type: string
+                  nullable: true
+                  example: null
+
+      deprecated: false
+  
+  /me/profile-picture:
+    patch:
+      tags:
+        - Users
+        - Uploads
+      summary: Updates profile picture
+      description: Uploads an image and establishes it as authenticated user profile picture
+      operationId: updateProfilePicture
+      security:
+        - sanctum: []
+      
+      responses:
+        '200':
+          description: Profile picture updated
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Profile picture updated successfully.
+                  user:
+                    $ref: '#/components/schemas/User'
+      
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required:
+                - image
+              properties:
+                image:
+                  type: string
+                  format: binary
+  
+  /me/banner:
+    patch:
+      tags:
+        - Users
+        - Uploads
+      summary: Updates user banner
+      description: Uploads an image and establishes it as authenticated user banner
+      operationId: updateBanner
+      security:
+        - sanctum: []
+      
+      responses:
+        '200':
+          description: Banner updated
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Banner updated successfully.
+                  user:
+                    $ref: '#/components/schemas/User'
+      
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required:
+                - image
+              properties:
+                image:
+                  type: string
+                  format: binary
+  
+  /dashboard:
+    get:
+      tags:
+        - Users
+      summary: User dashboard
+      description: Returns the elements necesary to build authenticated user dashboard
+      operationId: dashboard
+      security:
+        - sanctum: []
+      
+      responses:
+        '200':
+          description: Dashboard returned
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  user:
+                    $ref: '#/components/schemas/User'
+                  medals:
+                    type: integer
+                    example: 5
+                  courses:
+                    type: integer
+                    example: 2
+                  progress:
+                    type: number
+                    example: 75.3
+                  recent_course_progress:
+                    type: number
+                    example: 90.5
+                  recent_courses:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Enrollment'
+  
+  /profile:
+    get:
+      tags:
+        - Users
+      summary: User profile
+      description: Returns the elements necesary to build authenticated user profile page
+      operationId: profile
+      security:
+        - sanctum: []
+      
+      responses:
+        '200':
+          description: User profile returned
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  user:
+                    $ref: '#/components/schemas/User'
+                  medals:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Medal'
+                  courses:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Enrollment'
+
+  /courses:
+    get:
+      tags:
+        - Courses
+      summary: List Courses
+      description: Returns a paginated list of published Courses.
+      operationId: listCourses
+      security:
+        - sanctum: []
+      
+
+      responses:
+        '200':
+          description: Courses retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CourseIndexResponse"
+      parameters:
+        - name: search
+          in: query
+          description: Search by course title, description or code.
+          required: false
+          schema:
+            type: string
+            maxLength: 100
+        - name: categories
+          in: query
+          description: Filter courses by category codes.
+          required: false
+          style: form
+          explode: true
+          schema:
+            type: array
+            items:
+              type: string
+              maxItems: 5
+        - name: subjects
+          in: query
+          description: Filter course by category codes.
+          required: false
+          style: form
+          explode: true
+          schema:
+            type: array
+            items:
+              type: string
+              maxItems: 5
+        - name: created_from
+          in: query
+          description: Return courses created from this date.
+          required: false
+          schema:
+            type: string
+            format: date
+        - name: created_to
+          in: query
+          description: Returns courses created before this date.
+          required: false
+          schema:
+            type: string
+            format: date
+        - name: sort
+          in: query
+          required: false
+          schema:
+            type: string
+            enum:
+              - title
+              - created_at
+              - updated_at
+        - name: order
+          in: query
+          required: false
+          schema:
+            type: string
+            enum:
+              - asc
+              - desc
+        - name: page
+          in: query
+          required: false
+          schema:
+            type: integer
+            minimum: 1
+          example: 2
+        - name: per_page
+          in: query
+          required: false
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 50
+          example: 15
+    post:
+      tags:
+        - Courses
+      summary: Creates a course
+      description: Creates a draft course
+      operationId: createCourse
+      security:
+        - sanctum: []
+      
+
+      responses:
+        '201':
+          description: Course created successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CourseCreateResponse"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CourseCreateRequest"
+      deprecated: false
+  
+  /courses/{course}:
+    get:
+      tags:
+        - Courses
+      summary: Obtain one specific course
+      description: Returns the specified course by code
+      operationId: getCourse
+      security:
+        - sanctum: []
+      
+
+      parameters:
+        - $ref: "#/components/parameters/CourseCode"
+
+      responses:
+        '200':
+          description: Course retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CourseGetResponse"
+    
+    patch:
+      tags:
+        - Courses
+      summary: Edit one course
+      description: Updates the given data in the specified course
+      operationId: updateCourse
+      security:
+        - sanctum: []
+      
+      
+      parameters:
+        - $ref: "#/components/parameters/CourseCode"
+
+      responses:
+        '200':
+          description: Course updated successfully.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CourseUpdateResponse"
+      
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CourseUpdateRequest"
+    
+    delete:
+      tags:
+        - Courses
+      summary: Delete the specified course
+      description: Permanently deletes the specified course
+      operationId: deleteCourse
+      security:
+        - sanctum: []
+      
+
+      parameters:
+        - $ref: "#/components/parameters/CourseCode"
+      
+      responses:
+        '204':
+          description: Course deleted successfully
+
+      deprecated: false
+
+  /courses/{course}/send-for-approval:
+    patch:
+      tags:
+        - Courses
+      summary: Sends a course for approval
+      description: >
+        Changes the course status to pending review so that
+        an authorized administrator can approve or reject it.
+      operationId: sendForApproval
+      security:
+        - sanctum: []
+      
+
+      parameters:
+        - $ref: "#/components/parameters/CourseCode"
+      
+      responses:
+        '200':
+          description: Course send for approval successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Send for approval
+                  course:
+                    $ref: "#/components/schemas/Course"
+  
+  /courses/{course}/approve:
+    patch:
+      tags:
+        - Courses
+      summary: Approves the course
+      description: Changes the status of the course to approved
+      operationId: approveCourse
+      security:
+        - sanctum: []
+      
+
+      parameters:
+        - $ref: "#/components/parameters/CourseCode"
+      
+      responses:
+        '200':
+          description: Course approved
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Course approved successfully
+                  course:
+                    $ref: "#/components/schemas/Course"
+      
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - commentary
+              properties:
+                commentary:
+                  type: string
+                  maxLength: 2000
+                  example: >
+                    El contenido del curso está bien estructurado,
+                    pero se recomienda agregar una sección sobre testing.
+
+  /courses/{course}/reject:
+    patch:
+      tags:
+        - Courses
+      summary: Rejects the course
+      description: Changes the status of the course to draft
+      operationId: rejectCourse
+      security:
+        - sanctum: []
+      
+
+      parameters:
+        - $ref: "#/components/parameters/CourseCode"
+      
+      responses:
+        '200':
+          description: Course rejected
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Course rejected
+                  course:
+                    $ref: "#/components/schemas/Course"
+      
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - commentary
+              properties:
+                commentary:
+                  type: string
+                  maxLength: 2000
+                  example: >
+                    El contenido del curso está bien estructurado,
+                    pero se recomienda agregar una sección sobre testing.
+  
+  /courses/{course}/publish:
+    patch:
+      tags:
+        - Courses
+      summary: Publish the course
+      description: Changes the status of the course to published, making it accessible to the users
+      operationId: publishCourse
+      security:
+        - sanctum: []
+      
+
+      parameters:
+        - $ref: "#/components/parameters/CourseCode"
+      
+      responses:
+        '200':
+          description: Course published
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Course published successfully
+                  course:
+                    $ref: "#/components/schemas/Course"
+  
+  /courses/{course}/icon:
+    patch:
+      tags:
+        - Courses
+      summary: Update the course icon
+      description: Changes the icon of the specified course. Can be set to null.
+      operationId: updateCourseIcon
+      security:
+        - sanctum: []
+      
+
+      parameters:
+        - $ref: "#/components/parameters/CourseCode"
+      
+      responses:
+        '200':
+          description: Icon updated
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Updated course icon
+                  course:
+                    $ref: "#/components/schemas/Course"
+
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - icon
+              properties:
+                icon:
+                  type: string
+                  format: uri
+                  example: /storage/courses/icons/example.png
+  
+  /courses/icon:
+    post:
+      tags:
+        - Courses
+        - Uploads
+      summary: Upload an icon
+      description: Uploads an image file and returns the image path
+      operationId: uploadIcon
+      security:
+        - sanctum: []
+      
+
+      responses:
+        '201':
+          description: Icon uploaded
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  path:
+                    type: string
+                    example: /storage/courses/icons/example.png
+                  url:
+                    type: string
+                    format: uri
+                    example: http://localhost:81/public/storage/courses/icons/example.png
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required:
+                - image
+              properties:
+                image:
+                  type: string
+                  format: binary
+      deprecated: false
+        
+
+components:
+  schemas:
+
+    User:
+      type: object
+      properties:
+        username:
+          type: string
+          example: JohnDoe2026
+        email:
+          type: string
+          example: example@email.com
+        control_number:
+          type: string
+          example: 26001234
+        name:
+          type: string
+          example: John
+        surname:
+          type: string
+          example: Doe
+        second_surname:
+          type: string
+          example: null
+        description:
+          type: string
+          example: Atque ut minus voluptatem sint saepe similique magnam maxime.
+        type:
+          type: string
+          example: Student
+        profile_picture:
+          type: string
+          format: uri
+          example: http://localhost:81/public/storage/profiles/profile_picture.png
+        banner:
+          type: string
+          format: uri
+          example: http://localhost:81/public/storage/banners/banner.png
+        created_at:
+          type: string
+          format: date
+          example: 2026-08-16T08:00:43+00:00
+    
+    Medal:
+      type: object
+      properties:
+        name:
+          type: string
+          example: Primer curso completado
+        description:
+          type: string
+          example: Completaste tu primer curso
+        obtained_at:
+          type: string
+          example: 2026-07-23 01:52:09
+        image:
+          type: string
+          format: uri
+          example: http://localhost:81/public/storage/medals/icon.png
+    
+    Category:
+      type: object
+      required:
+        - code
+        - name
+      properties:
+        code:
+          type: string
+          example: php
+        
+        name:
+          type: string
+          example: PHP
+    
+    Subject:
+      type: object
+      required:
+        - code
+        - name
+      properties:
+        code:
+          type: string
+          example: 8J4
+        
+        name:
+          type: string
+          example: Programación Web
+    
+    Course:
+      type: object
+      required:
+        - code
+        - title
+        - short_title
+        - description
+        - categories
+        - subjects
+        - status
+        - icon
+      properties:
+        code:
+          type: string
+          example: ISC123
+        
+        title:
+          type: string
+          example: Introducción a Laravel
+        
+        short_title:
+          type: string
+          example: Laravel
+        
+        description:
+          type: string
+          example: Curso introductorio al desarrollo de aplicaciones con Laravel.
+        
+        categories:
+          type: array
+          items:
+            $ref: "#/components/schemas/Category"
+        
+        subjects:
+          type: array
+          items:
+            $ref: "#/components/schemas/Subject"
+        
+        status:
+          type: integer
+          description: |
+            Course status:
+              0 = Draft
+              1 = Pending Review
+              2 = Approved
+              3 = Published
+              4 = Archived
+          example: 0
+        
+        icon:
+          type: string
+          nullable: true
+          format: uri
+          example: http://localhost:81/public/storage/courses/icons/example.png
+    
+    Enrollment:
+      type: object
+      properties:
+        code:
+          type: string
+          example: ISC123
+        
+        title:
+          type: string
+          example: Introducción a Laravel
+        
+        short_title:
+          type: string
+          example: Laravel
+        
+        description:
+          type: string
+          example: Curso introductorio al desarrollo de aplicaciones con Laravel.
+        
+        joined_at:
+          type: string
+          example: 2026-07-03 01:52:09
+        
+        completed_at:
+          type: string
+          example: 2026-07-25 01:52:09
+        
+        last_accessed_at:
+          type: string
+          example: 2026-07-26 01:52:09
+        
+        status:
+          type: integer
+          description: |
+            Course status:
+              0 = Draft
+              1 = Pending Review
+              2 = Approved
+              3 = Published
+              4 = Archived
+          example: 0
+        
+        icon:
+          type: string
+          nullable: true
+          format: uri
+          example: http://localhost:81/public/storage/courses/icons/example.png
+    
+    Lesson:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 1
+
+        title:
+          type: string
+          example: Introducción a la programación usando Laravel.
+        
+        short_title:
+          type: string
+          example: Introducción
+        
+        order:
+          type: integer
+          example: 1
+      
+    CourseLesson:
+      type: object
+      properties:
+        code:
+          type: string
+          example: ISC123
+        
+        title:
+          type: string
+          example: Introducción a Laravel
+        
+        short_title:
+          type: string
+          example: Laravel
+        
+        description:
+          type: string
+          example: Curso introductorio al desarrollo de aplicaciones con Laravel.
+        
+        categories:
+          type: array
+          items:
+            $ref: "#/components/schemas/Category"
+        
+        subjects:
+          type: array
+          items:
+            $ref: "#/components/schemas/Subject"
+        
+        status:
+          type: integer
+          example: 0
+        
+        icon:
+          type: string
+          nullable: true
+          format: uri
+          example: /storage/courses/icons/example.png
+        
+        lessons:
+          type: array
+          items:
+            $ref: "#/components/schemas/Lesson"
+
+    CourseCreateRequest:
+      type: object
+      required:
+        - code
+        - title
+        - short_title
+      properties:
+        code:
+          type: string
+          pattern: '^[A-Z0-9_-]+$'
+          minLength: 3
+          maxLength: 14
+          example: ISC123
+        
+        title:
+          type: string
+          minLength: 1
+          maxLength: 200
+          example: Introducción a Laravel
+        
+        short_title:
+          type: string
+          minLength: 1
+          maxLength: 80
+          example: Laravel
+        
+        description:
+          type: string
+          nullable: true
+          minLength: 1
+          maxLength: 300
+          example: Curso introductorio al desarrollo de aplicaciones con Laravel.
+        
+        categories:
+          type: array
+          maxItems: 5
+          items:
+            type: string
+            example: php
+        
+        subjects:
+          type: array
+          maxItems: 5
+          items:
+            type: string
+            example: 8J4
+        
+        icon:
+          type: string
+          nullable: true
+          maxLength: 255
+          format: uri
+          example: /storage/courses/icons/example.png
+
+    CourseIndexResponse:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            $ref: "#/components/schemas/Course"
+
+        links:
+          type: object
+          properties:
+            first:
+              type: string
+              format: url
+              example: http://localhost:81/api/v1/courses?page=1
+            last:
+              type: string
+              format: url
+              example: http://localhost:81/api/v1/courses?page=3
+            prev:
+              type: string
+              format: url
+              example: http://localhost:81/api/v1/courses?page=1
+            next:
+              type: string
+              format: url
+              example: http://localhost:81/api/v1/courses?page=3
+
+        meta:
+          type: object
+          properties:
+            current_page:
+              type: integer
+              example: 2
+            from:
+              type: integer
+              example: 1
+            last_page:
+              type: integer
+              example: 3
+            links:
+              type: array
+              items:
+                type: object
+                properties:
+                  url:
+                    type: string
+                    example: http://localhost:81/api/v1/courses?page=1
+                  label:
+                    type: string
+                    example: "&laquo; Previous"
+                  page:
+                    type: integer
+                    example: 1
+                  active:
+                    type: boolean
+                    example: true
+            path:
+              type: string
+              example: http://localhost:81/api/v1/courses
+            per_page:
+              type: integer
+              example: 15
+            to:
+              type: integer
+              example: 30
+            total:
+              type: integer
+              example: 42
+      
+    CourseCreateResponse:
+      type: object
+      properties:
+        course:
+          $ref: "#/components/schemas/Course"
+    
+    CourseGetResponse:
+      type: object
+      properties:
+        data:
+          $ref: "#/components/schemas/CourseLesson"
+    
+    CourseUpdateResponse:
+      type: object
+      properties:
+        message:
+          type: string
+          example: Course updated successfully
+        course:
+          $ref: "#/components/schemas/Course"
+    
+    CourseUpdateRequest:
+      type: object
+      properties:
+        code:
+          type: string
+          pattern: '^[A-Z0-9_-]+$'
+          minLength: 3
+          maxLength: 14
+          example: ISC123
+        
+        title:
+          type: string
+          minLength: 1
+          maxLength: 200
+          example: Introducción a Laravel
+        
+        short_title:
+          type: string
+          minLength: 1
+          maxLength: 80
+          example: Laravel
+        
+        description:
+          type: string
+          nullable: true
+          minLength: 1
+          maxLength: 300
+          example: Curso introductorio al desarrollo de aplicaciones con Laravel.
+          description: >
+            Optional. If omitted, the current description is preserved.
+            If null, the description is removed.
+        
+        categories:
+          type: array
+          maxItems: 5
+          items:
+            type: string
+            example: php
+          description: >
+            If omitted, existing categories are preserved.
+            An empty array removes all categories.
+        
+        subjects:
+          type: array
+          maxItems: 5
+          items:
+            type: string
+            example: 8J4
+        
+        icon:
+          type: string
+          maxLength: 255
+          format: uri
+          example: /storage/courses/icons/example.png
+
+  parameters:
+    
+    CourseCode:
+      name: course
+      in: path
+      required: true
+      description: Unique code of the course.
+      schema:
+        type: string
+        pattern: '^[A-Z0-9_-]+$'
+        minLength: 3
+        maxLength: 14
+        example: ISC123
+  
+  securitySchemes:
+    
+    sanctum:
+      type: apiKey
+      in: cookie
+      name: webcis-api-session
+      description: |
+        Laravel Sanctum session cookie used to authenticate SPA requests.
+        The client must first obtain a CSRF cookie and then authenticate
+        through the login endpoint.
