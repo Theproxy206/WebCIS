@@ -50,6 +50,7 @@ Route::prefix('v1')->group(function () {
     Route::patch('/courses/{course}/icon', [CourseController::class, 'updateIcon'])->middleware('auth:sanctum');
     Route::delete('/courses/{course}', [CourseController::class, 'destroy'])->middleware('auth:sanctum');
     Route::get('/courses/{course}/lessons', [LessonController::class, 'index'])->middleware('auth:sanctum');
+    Route::get('/courses/{course}/lessons/{lesson}', [LessonController::class, 'show'])->middleware('auth:sanctum');
 
     Route::get('/materials', [MaterialController::class, 'index'])->middleware('auth:sanctum');
     Route::get('/materials/{material}', [MaterialController::class, 'show'])->middleware('auth:sanctum');

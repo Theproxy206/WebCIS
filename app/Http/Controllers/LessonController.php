@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Resources\LessonResource;
 use App\Http\Resources\LessonSummaryResource;
 use App\Http\Services\LessonService;
 use App\Models\Course;
@@ -16,7 +17,7 @@ class LessonController extends Controller
     ) {}
 
     /**
-     * Display a listing of the resource.
+     * Display a listing of lessons.
      * 
      * @param string $code
      * @return JsonResponse
@@ -39,11 +40,19 @@ class LessonController extends Controller
     }
 
     /**
-     * Display the specified resource.
+     * Display the specified lesson.
+     * 
+     * @param string $code
+     * @param int $serial
+     * @return JsonResponse
      */
-    public function show(string $id)
+    public function show(string $code, int $serial): JsonResponse
     {
-        //
+        $course = Course::where('cou_code', $code)->firstOrFail();
+
+        return response()->json([
+            'lesson' => new LessonResource($this->lessonService->lesson($course, $serial))
+        ]);
     }
 
     /**

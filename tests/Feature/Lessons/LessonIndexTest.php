@@ -15,9 +15,6 @@ class LessonIndexTest extends TestCase
 
     protected $seed = true;
 
-    /**
-     * A basic feature test example.
-     */
     public function test_authorized_user_can_get_lessons(): void
     {
         $user = User::factory()->student()->create();
@@ -39,5 +36,25 @@ class LessonIndexTest extends TestCase
                 ]
             ]
         ]);
+    }
+
+    public function test_authorized_user_can_get_one_lesson(): void
+    {
+        $user = User::factory()->student()->create();
+
+        Sanctum::actingAs($user);
+
+        $course = Course::factory()->withLessons()->create();
+
+        $lesson = $course->lessons()->first();
+
+        $response = $this->getJson("/api/v1/courses/$course->cou_code/lessons/$lesson->les_serial");
+
+        dd($response->getContent());
+
+        $response->assertOk()
+            ->assertJsonPath('lesson.id', $lesson->les_serial)
+            ->assertJsonPath('lesson.title', $lesson->les_title)
+            ->assertJsonPath('lesson.short_title', $lesson->les_short_title);
     }
 }

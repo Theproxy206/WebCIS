@@ -1030,6 +1030,50 @@ paths:
                   format: uri
                   example: /storage/courses/icons/example.png
   
+  /courses/{course}/lessons:
+    get:
+      tags:
+        - Courses
+      summary: Get lessons of one course
+      description: Returns summary info of the lessons of the specified course
+      operationId: getLessons
+      security:
+        - sanctum: []
+      
+      responses:
+        '200':
+          description: Lessons returned
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  lessons:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/Lesson"
+  
+  /courses/{course}/lessons/{lesson}:
+    get:
+      tags:
+        - Courses
+      summary: Get information and content of the lesson
+      description: Returns information and content of the specified lessons of the specified content
+      operationId: getLessonContent
+      security:
+        - sanctum: []
+      
+      responses:
+        '200':
+          description: Lesson returned
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  lesson:
+                    $ref: "#/components/schemas/Lesson"
+  
   /courses/icon:
     post:
       tags:
