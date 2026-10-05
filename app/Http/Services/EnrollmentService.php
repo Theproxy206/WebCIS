@@ -89,7 +89,7 @@ class EnrollmentService {
             ->activeCourses($user, [EnrollmentStatus::InProgress])
             ->orderByPivot('last_accessed_at', 'desc')
             ->firstOrFail()
-            ->cou_token;
+            ->cou_id;
         }
 
         $completedLessons = $user->lessons()
