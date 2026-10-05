@@ -22,7 +22,7 @@ use Laravel\Sanctum\Http\Middleware\EnsureFrontendRequestsAreStateful;
 
 Route::prefix('v1')->group(function () {
     Route::post('/auth/login', [UserController::class, 'login'])->middleware('web');
-    Route::post('/auth/logout', [UserController::class, 'logout'])->middleware('web');
+    Route::post('/auth/logout', [UserController::class, 'logout'])->middleware('auth:sanctum');
 
     Route::post('/auth/register', [UserController::class, 'register']);
 
