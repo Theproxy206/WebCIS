@@ -74,7 +74,8 @@ class CourseService {
         ];
 
         $sort = $sortColumns[$filters['sort'] ?? 'created_at'];
-        $order = $filters['order'] ?? OrderDirection::Desc;
+        $order = OrderDirection::from($filters['order']);
+        $order = $order ?? OrderDirection::Desc;
 
         $query->orderBy($sort, $order->value);
 
