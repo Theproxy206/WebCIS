@@ -75,10 +75,10 @@ class CourseService {
 
         $sort = $sortColumns[$filters['sort'] ?? 'created_at'];
 
-        if (!$filters['order']) {
+        if ($filters['order'] === null) {
             $filters['order'] = 'desc';
         }
-        
+
         $order = OrderDirection::from($filters['order']);
         $order = $order ?? OrderDirection::Desc;
 
