@@ -75,7 +75,7 @@ class CourseService {
 
         $sort = $sortColumns[$filters['sort'] ?? 'created_at'];
 
-        if ($filters['order'] === null) {
+        if ($filters['order'] == null) {
             $filters['order'] = 'desc';
         }
 
