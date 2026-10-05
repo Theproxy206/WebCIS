@@ -16,6 +16,22 @@ class LessonFactory extends Factory
             'les_title' => fake()->sentence(4),
             'les_short_title' => fake()->words(2, true),
             'les_order' => fake()->numberBetween(0, 9),
+            'les_content' => [
+                'blocks' => [
+                    [
+                        'type' => 'paragraph',
+                        'content' => fake()->paragraph(),
+                    ],
+                    [
+                        'type' => 'paragraph',
+                        'content' => fake()->paragraph(),
+                    ],
+                    [
+                        'type' => 'video',
+                        'url' => fake()->url(),
+                    ],
+                ],
+            ],
             'fk_lessons_courses' => Course::factory(),
             'fk_lessons_lessons' => null,
         ];

@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\LessonController;
 use App\Http\Controllers\MaterialController;
 use App\Http\Controllers\UploadsController;
 use Illuminate\Support\Facades\Route;
@@ -48,6 +49,8 @@ Route::prefix('v1')->group(function () {
     Route::patch('/courses/{course}', [CourseController::class, 'update'])->middleware('auth:sanctum');
     Route::patch('/courses/{course}/icon', [CourseController::class, 'updateIcon'])->middleware('auth:sanctum');
     Route::delete('/courses/{course}', [CourseController::class, 'destroy'])->middleware('auth:sanctum');
+    Route::get('/courses/{course}/lessons', [LessonController::class, 'index'])->middleware('auth:sanctum');
+    Route::get('/courses/{course}/lessons/{lesson}', [LessonController::class, 'show'])->middleware('auth:sanctum');
 
     Route::get('/materials', [MaterialController::class, 'index'])->middleware('auth:sanctum');
     Route::get('/materials/{material}', [MaterialController::class, 'show'])->middleware('auth:sanctum');

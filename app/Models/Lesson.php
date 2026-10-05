@@ -24,6 +24,9 @@ class Lesson extends Model
         'les_content',
     ];
 
+    protected $casts = [
+        'les_content' => 'array',
+    ];
 
     public function course(): BelongsTo {
         return $this->belongsTo(Course::class, 'fk_lessons_courses', 'cou_id');
