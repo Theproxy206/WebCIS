@@ -9,7 +9,7 @@ class LogoutService
 {
     public function logout(LogoutRequest $request): void
     {
-        Auth::logout();
+        Auth::guard('web')->logout();
 
         $request->session()->invalidate();
         $request->session()->regenerateToken();
